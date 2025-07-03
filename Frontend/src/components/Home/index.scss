@@ -71,6 +71,39 @@
             color: #333;
         }
     }
+    .mute-button {
+        color: #ffd700;
+        font-size: 13px;
+        font-weight: 400;
+        letter-spacing: 3px;
+        text-decoration: none;
+        padding: 8px 15px;
+        border: 1px solid #ffd700;
+        margin-top: 25px;
+        margin-left: 10px; // Add some space if it's next to another button
+        float: left;
+        background: transparent;
+        cursor: pointer;
+
+        &:hover {
+            background: #ffd700;
+            color: #333;
+        }
+    }
+}
+
+#background-video {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    z-index: -1; // Set z-index to -1 to ensure it's in the background
+    background-size: cover;
+    object-fit: cover; // This ensures the video covers the screen without distortion
+    pointer-events: none; // Prevent interaction with the video
 }
 
 @media screen and (max-width: 1400px){
