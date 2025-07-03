@@ -1,140 +1,101 @@
-.home-page{ 
-    .text-zone { 
-        position: absolute; 
-        align-content: center;
-        left: 10%; 
-        top: 50%; 
-        transform: translateY(-50%); 
-        width: 40%; 
-        max-height: 90%; 
-        display: absolute;
-    }
-    h1{
-        color: #fff; 
-        font-size: 53px; 
-        margin: 0; 
-        font-weight: 400; 
-        cursor: pointer;
+import { useEffect, useState, useRef } from 'react';
+import Loader from 'react-loaders';
+import { Link } from 'react-router-dom';
+// import LogoPL from '../../assets/images/PL.webp'; // Old logo
+import AnimatedLetters from '../AnimatedLetters';
+import './index.scss';
 
-        &::before { 
-            color: #ffd700; 
-            font-size: 18px; 
-            position: absolute; 
-            margin-top: -40px; 
-            left: 15px; 
-            opacity: 0.6; 
+const Home = () => {
+    const [letterClass, setLetterClass] = useState('text-animate');
+    const nameArray = "Welcome to".split("");
+    const jobArray = "EPL".split("");
+    const playerRef = useRef(null);
+    const [isMuted, setIsMuted] = useState(true);
+
+    useEffect(() => {
+        const timerId = setTimeout(() => {
+          setLetterClass('text-animate-hover');
+        }, 4000);
+      
+        return () => {
+          clearTimeout(timerId);
+        };
+      }, []);
+
+    // YouTube Player API setup
+    useEffect(() => {
+        // Load the Iframe Player API code asynchronously.
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        // This function creates an <iframe> (and YouTube player)
+        // after the API code downloads.
+        window.onYouTubeIframeAPIReady = () => {
+            playerRef.current = new window.YT.Player('background-video', {
+                events: {
+                    'onReady': onPlayerReady,
+                }
+            });
+        };
+
+        return () => {
+            // Clean up the global function and player
+            delete window.onYouTubeIframeAPIReady;
+            if (playerRef.current && typeof playerRef.current.destroy === 'function') {
+                playerRef.current.destroy();
+            }
+        };
+    }, []);
+
+    const onPlayerReady = (event) => {
+        // Video starts muted due to URL params.
+        // Autoplay is also handled by URL params.
+        // We can call playVideo() to be certain, especially if any future changes might affect autoplay.
+        event.target.playVideo();
+    };
+
+    const toggleMute = () => {
+        if (!playerRef.current) return;
+        if (isMuted) {
+            playerRef.current.unMute();
+            setIsMuted(false);
+        } else {
+            playerRef.current.mute();
+            setIsMuted(true);
         }
+    };
 
-        &::after { 
-            color: #ffd700; 
-            font-size: 18px; 
-            position: absolute; 
-            margin-top: 18px; 
-            left: 20px; 
-            animation: fadeIn 1s 1.7s backwards; 
-            opacity: 0.6; 
-        }
-        img { 
-            width: 200px; 
-            opacity: 0; 
-            height: auto; 
-            animation: rotateIn 1s linear both; 
-            animation-delay: 1.4s; 
-        }
-    }
-
-    h2 { 
-        color: #ade8f4; 
-        margin-top: 20px; 
-        font-weight: 500; 
-        font-size: 11px; 
-        font-family: sans-serif; 
-        letter-spacing: 3px; 
-        animation: fadeIn 1s 1.8s backwards; 
-    }
-
-    .flat-button { 
-        color: #ffd700; 
-        font-size: 15px; 
-        font-weight: 800;
-        letter-spacing: 4px;
-        text-decoration: none;
-        padding: 10px 18px; 
-        border: 2px solid #ffd700; 
-        margin-top: 25px; 
-        float: left; 
-        animation: fadeIn 1s 1.8s backwards; 
-        white-space: nowrap; 
-
-        &:hover { 
-            background: #ffd700; 
-            color: #333;
-        }
-    }
-    .mute-button {
-        color: #ffd700;
-        font-size: 13px;
-        font-weight: 400;
-        letter-spacing: 3px;
-        text-decoration: none;
-        padding: 8px 15px;
-        border: 1px solid #ffd700;
-        margin-top: 25px;
-        margin-left: 10px; // Add some space if it's next to another button
-        float: left;
-        background: transparent;
-        cursor: pointer;
-
-        &:hover {
-            background: #ffd700;
-            color: #333;
-        }
-    }
+    return(
+      <>
+        <iframe 
+          id="background-video"
+          src="https://www.youtube.com/embed/wz1r_VJaJZw?autoplay=1&mute=1&loop=1&playlist=wz1r_VJaJZw&enablejsapi=1" 
+          frameBorder="0" 
+          allow="autoplay; encrypted-media; picture-in-picture"
+          allowFullScreen
+          title="background video"
+        ></iframe>
+        <div className = "container home-page">
+            <div className="text-zone">
+                <h1>
+                <img src="https://upload.wikimedia.org/wikipedia/en/thumb/f/f2/Premier_League_Logo.svg/280px-Premier_League_Logo.svg.png" alt = "EPL Logo" />
+                <br />
+                <AnimatedLetters letterClass={letterClass} strArray={nameArray} idx={12} />
+                <br /> 
+                <AnimatedLetters letterClass={letterClass} strArray={jobArray} idx={15} /> 
+                </h1>
+                <h2>Your home for everything Premier League related!</h2>
+                <Link to="/teams" className="flat-button">GET STARTED</Link>
+                <button onClick={toggleMute} className="mute-button">
+                    {isMuted ? 'Sound On' : 'Sound Off'}
+                </button>
+            </div>
+        </div>
+        <Loader type="pacman" />
+      </>
+    )
 }
 
-#background-video {
-    position: fixed;
-    right: 0;
-    bottom: 0;
-    min-width: 100%;
-    min-height: 100%;
-    width: auto;
-    height: auto;
-    z-index: -1; // Set z-index to -1 to ensure it's in the background
-    background-size: cover;
-    object-fit: cover; // This ensures the video covers the screen without distortion
-    pointer-events: none; // Prevent interaction with the video
-}
-
-@media screen and (max-width: 1400px){
-    .home-page{
-        h1{
-            font-size: 39px;
-        }
-    }
-}
-@media screen and (max-width: 1000px){
-    
-    .home-page{
-        h1{
-            font-size: 40px; 
-            justify-content: center;
-        }
-        .text-zone{
-            position: block;
-            width: 100%; 
-            transform: none;
-            padding: 10px;
-            box-sizing: border-box;
-            display: inline-block;
-            text-align: left;
-            padding-top: 100px;
-        }
-
-        .flat-button{
-            float: none;
-            display: block;
-            width: 125px;
-        }
-    }
-}
+export default Home
