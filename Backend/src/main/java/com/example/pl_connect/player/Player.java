@@ -3,11 +3,12 @@ package com.example.pl_connect.player;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "player_stats")
+@Table(name = "stats_epl")
 public class Player {
     @Id
     @Column(name = "name", unique = true)
     private String name;
+
     private String nation;
     private String pos;
     private Integer age;
@@ -23,12 +24,11 @@ public class Player {
     private Double xag;
     private String team;
 
-
     public Player(String name) {
         this.name = name;
     }
 
-    public Player(String name, String nation, String pos, int age, int mp, int starts, double min, double gls, double ast, double pk, double crdy, double crdr, double xg, double xag, String team) {
+    public Player(String name, String nation, String pos, Integer age, Integer mp, Integer starts, Double min, Double gls, Double ast, Double pk, Double crdy, Double crdr, Double xg, Double xag, String team) {
         this.name = name;
         this.nation = nation;
         this.pos = pos;
@@ -46,9 +46,7 @@ public class Player {
         this.team = team;
     }
 
-    public Player() {
-
-    }
+    public Player() {}
 
     public String getName() {
         return name;
@@ -74,91 +72,91 @@ public class Player {
         this.pos = pos;
     }
 
-    public int getAge() {
+    public Integer getAge() {
         return age;
     }
 
-    public void setAge(int age) {
+    public void setAge(Integer age) {
         this.age = age;
     }
 
-    public int getMp() {
+    public Integer getMp() {
         return mp;
     }
 
-    public void setMp(int mp) {
+    public void setMp(Integer mp) {
         this.mp = mp;
     }
 
-    public int getStarts() {
+    public Integer getStarts() {
         return starts;
     }
 
-    public void setStarts(int starts) {
+    public void setStarts(Integer starts) {
         this.starts = starts;
     }
 
-    public double getMin() {
+    public Double getMin() {
         return min;
     }
 
-    public void setMin(double min) {
+    public void setMin(Double min) {
         this.min = min;
     }
 
-    public double getGls() {
+    public Double getGls() {
         return gls;
     }
 
-    public void setGls(double gls) {
+    public void setGls(Double gls) {
         this.gls = gls;
     }
 
-    public double getAst() {
+    public Double getAst() {
         return ast;
     }
 
-    public void setAst(double ast) {
+    public void setAst(Double ast) {
         this.ast = ast;
     }
 
-    public double getPk() {
+    public Double getPk() {
         return pk;
     }
 
-    public void setPk(double pk) {
+    public void setPk(Double pk) {
         this.pk = pk;
     }
 
-    public double getCrdy() {
+    public Double getCrdy() {
         return crdy;
     }
 
-    public void setCrdy(double crdy) {
+    public void setCrdy(Double crdy) {
         this.crdy = crdy;
     }
 
-    public double getCrdr() {
+    public Double getCrdr() {
         return crdr;
     }
 
-    public void setCrdr(double crdr) {
+    public void setCrdr(Double crdr) {
         this.crdr = crdr;
     }
 
-    public double getXg() {
+    public Double getXg() {
         return xg;
     }
 
-    public void setXg(double xg) {
+    public void setXg(Double xg) {
         this.xg = xg;
     }
 
-    public double getXag() {
+    public Double getXag() {
         return xag;
     }
 
-    public void setXag(double xag) {
+    public void setXag(Double xag) {
         this.xag = xag;
     }
 
