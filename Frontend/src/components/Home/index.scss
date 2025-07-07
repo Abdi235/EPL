@@ -1,76 +1,93 @@
-.home-page{ 
-    .text-zone { 
-        position: absolute; 
+.home-page {
+    width: 100%;
+    height: 100vh;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    overflow: hidden;
+
+    .text-zone {
+        position: absolute;
+        left: 10%;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 40%;
+        max-height: 90%;
+        display: flex;
+        flex-direction: column;
         align-content: center;
-        left: 10%; 
-        top: 50%; 
-        transform: translateY(-50%); 
-        width: 40%; 
-        max-height: 90%; 
-        display: absolute;
+        z-index: 2;
+
+        background-color: rgba(0, 0, 0, 0.5); // Semi-transparent background for readability
+        padding: 30px;
+        border-radius: 10px;
     }
-    h1{
-        color: #fff; 
-        font-size: 53px; 
-        margin: 0; 
-        font-weight: 400; 
+
+    h1 {
+        color: #fff;
+        font-size: 53px;
+        margin: 0;
+        font-weight: 400;
         cursor: pointer;
 
-        &::before { 
-            color: #ffd700; 
-            font-size: 18px; 
-            position: absolute; 
-            margin-top: -40px; 
-            left: 15px; 
-            opacity: 0.6; 
+        &::before {
+            color: #ffd700;
+            font-size: 18px;
+            position: absolute;
+            margin-top: -40px;
+            left: 15px;
+            opacity: 0.6;
         }
 
-        &::after { 
-            color: #ffd700; 
-            font-size: 18px; 
-            position: absolute; 
-            margin-top: 18px; 
-            left: 20px; 
-            animation: fadeIn 1s 1.7s backwards; 
-            opacity: 0.6; 
+        &::after {
+            color: #ffd700;
+            font-size: 18px;
+            position: absolute;
+            margin-top: 18px;
+            left: 20px;
+            animation: fadeIn 1s 1.7s backwards;
+            opacity: 0.6;
         }
-        img { 
-            width: 200px; 
-            opacity: 0; 
-            height: auto; 
-            animation: rotateIn 1s linear both; 
-            animation-delay: 1.4s; 
+
+        img {
+            width: 200px;
+            height: auto;
+            opacity: 0;
+            animation: rotateIn 1s linear both;
+            animation-delay: 1.4s;
         }
     }
 
-    h2 { 
-        color: #ade8f4; 
-        margin-top: 20px; 
-        font-weight: 500; 
-        font-size: 11px; 
-        font-family: sans-serif; 
-        letter-spacing: 3px; 
-        animation: fadeIn 1s 1.8s backwards; 
+    h2 {
+        color: #ade8f4;
+        margin-top: 20px;
+        font-weight: 500;
+        font-size: 11px;
+        font-family: sans-serif;
+        letter-spacing: 3px;
+        animation: fadeIn 1s 1.8s backwards;
     }
 
-    .flat-button { 
-        color: #ffd700; 
-        font-size: 15px; 
+    .flat-button {
+        color: #ffd700;
+        font-size: 15px;
         font-weight: 800;
         letter-spacing: 4px;
         text-decoration: none;
-        padding: 10px 18px; 
-        border: 2px solid #ffd700; 
-        margin-top: 25px; 
-        float: left; 
-        animation: fadeIn 1s 1.8s backwards; 
-        white-space: nowrap; 
+        padding: 10px 18px;
+        border: 2px solid #ffd700;
+        margin-top: 25px;
+        float: left;
+        animation: fadeIn 1s 1.8s backwards;
+        white-space: nowrap;
 
-        &:hover { 
-            background: #ffd700; 
+        &:hover {
+            background: #ffd700;
             color: #333;
         }
     }
+
     .mute-button {
         color: #ffd700;
         font-size: 13px;
@@ -80,7 +97,7 @@
         padding: 8px 15px;
         border: 1px solid #ffd700;
         margin-top: 25px;
-        margin-left: 10px; // Add some space if it's next to another button
+        margin-left: 10px;
         float: left;
         background: transparent;
         cursor: pointer;
@@ -92,6 +109,60 @@
     }
 }
 
+// ✅ Video container in bottom-right
+.video-container {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    z-index: 2;
+
+    .video-link {
+        position: relative;
+        border-radius: 10px;
+        overflow: hidden;
+        display: inline-block;
+
+        iframe {
+            width: 300px;
+            height: 170px;
+            border: 2px solid white;
+            border-radius: 10px;
+            background-color: #000;
+            pointer-events: auto;
+        }
+
+        .video-title {
+            position: absolute;
+            bottom: 5px;
+            left: 10px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 4px 8px;
+            border-radius: 5px;
+            max-width: 280px;
+        }
+    }
+
+    .mute-icon {
+        width: 40px;
+        height: 40px;
+        margin-top: 8px;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: transform 0.2s ease;
+
+        &:hover {
+            transform: scale(1.1);
+        }
+    }
+}
+
+// ✅ Background YouTube video (if used fullscreen)
 #background-video {
     position: fixed;
     right: 0;
@@ -100,41 +171,68 @@
     min-height: 100%;
     width: auto;
     height: auto;
-    z-index: -1; // Set z-index to -1 to ensure it's in the background
-    background-size: cover;
-    object-fit: cover; // This ensures the video covers the screen without distortion
-    pointer-events: none; // Prevent interaction with the video
+    z-index: -1;
+    object-fit: cover;
+    pointer-events: none;
 }
 
-@media screen and (max-width: 1400px){
-    .home-page{
-        h1{
+// ✅ Responsive styles
+@media screen and (max-width: 1400px) {
+    .home-page {
+        h1 {
             font-size: 39px;
         }
     }
 }
-@media screen and (max-width: 1000px){
-    
-    .home-page{
-        h1{
-            font-size: 40px; 
+
+@media screen and (max-width: 1000px) {
+    .home-page {
+        h1 {
+            font-size: 32px;
             justify-content: center;
         }
-        .text-zone{
-            position: block;
-            width: 100%; 
+
+        .text-zone {
+            position: static;
+            width: 100%;
             transform: none;
             padding: 10px;
             box-sizing: border-box;
-            display: inline-block;
+            display: block;
             text-align: left;
             padding-top: 100px;
         }
 
-        .flat-button{
+        .flat-button {
             float: none;
             display: block;
             width: 125px;
+        }
+
+        .mute-button {
+            float: none;
+            display: block;
+            margin-left: 0;
+        }
+
+        .video-container {
+            right: 10px;
+            bottom: 10px;
+
+            .video-link iframe {
+                width: 200px;
+                height: 112px;
+            }
+
+            .video-title {
+                font-size: 10px;
+                max-width: 180px;
+            }
+
+            .mute-icon {
+                width: 35px;
+                height: 35px;
+            }
         }
     }
 }
