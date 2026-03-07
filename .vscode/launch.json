@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-PlConnectApplication<pl_connect>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.example.pl_connect.PlConnectApplication",
+            "projectName": "pl_connect",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

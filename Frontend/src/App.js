@@ -11,7 +11,7 @@ import Search from "./components/Search";
 
 function App() {
   useEffect(() => {
-    document.title = 'PremierZone Fantasy';
+    document.title = 'EPL';
   }, []);
 
   return (

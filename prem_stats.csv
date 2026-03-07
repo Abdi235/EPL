@@ -1,4 +1,4 @@
-Player,Nation,Pos,Age,MP,Starts,Min,Gls,Ast,PK,CrdY,CrdR,xG,xAG,Team
+name,nation,pos,age,mp,starts,min,gls,ast,pk,crdy,crdr,xg,xag,team
 Gabriel Dos Santos,br BRA,DF,24,14,14,1260.0,2.0,0.0,0.0,2.0,0.0,2.3,0.2,Arsenal
 Aaron Ramsdale,eng ENG,GK,24,14,14,1260.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,Arsenal
 William Saliba,fr FRA,DF,21,14,14,1245.0,2.0,1.0,0.0,4.0,0.0,0.3,0.9,Arsenal
