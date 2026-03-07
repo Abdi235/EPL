@@ -1,33 +1,32 @@
 .teams-page {
-    padding-left: 100px;
-    padding-right: 50px;
-    width: calc(100% - 100px);
+    width: 100%;
     position: initial;
-    height: 100%;
-    overflow: auto;
+    height: auto;
+    overflow: visible;
+    padding: 0 5vw 60px;
 
     h1.page-title {
-        margin-left: 100px;
-        margin-top: 120px;
+        margin-left: 0;
+        margin-top: 0;
         color: #fff;
     }
 
     .images-container {
-        display: flex;
-        gap: 50px;
-        flex-wrap: wrap;
-        padding-bottom: 100px;
-        margin-left: 50px;
-      }
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 32px;
+        padding-bottom: 80px;
+        margin-top: 40px;
+    }
     
     .image-box {
         position: relative;
-        flex: 1 1 20%;
-        height: 300px;
+        flex: 1 1 auto;
+        height: 280px;
         overflow: hidden;
         border-radius: 10px;
-        max-width: calc(20% );
-        margin-top: 50px;
+        max-width: 100%;
+        margin-top: 0;
 
         .teams-image {
             position: absolute;
@@ -114,35 +113,21 @@
         }
     }
 }
-@media screen and (max-width: 1100px){
+@media screen and (max-width: 900px){
     .container.teams-page{
-        .images-container{
-            margin-left: -50px;
-        }
-    }
-}
-@media screen and (max-width: 700px){
-    .container.teams-page{
-        width: 100%; 
-        padding: 20px; 
-        box-sizing: border-box; 
+        padding: 10px 16px 40px;
 
         h1.page-title{
-            margin-left: 20px; 
-            margin-top: 20px;
+            margin-bottom: 16px;
         }
-        .image-box{
-            height: 200px; 
-            max-width: calc(50% - 10px);
-        }
+
         .images-container {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            padding-bottom: 100px;
-            margin-left: -10px;
-            width:90vh;
-            height: 55vh;
-          }
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 20px;
+        }
+
+        .image-box{
+            height: 220px;
+        }
     }
 }

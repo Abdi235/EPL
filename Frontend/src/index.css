@@ -6,7 +6,7 @@ body {
   margin: 0;
   font-family: 300 11px/1.4 'Red Hat Display', 'sans-serif'; 
   color: #fff;
-  background: #52B69A;
+  background: radial-gradient(circle at top, #37003c 0, #0b1120 55%, #020617 100%);
   display: block;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

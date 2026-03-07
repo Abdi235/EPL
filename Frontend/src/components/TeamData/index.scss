@@ -19,9 +19,12 @@
   font-family: Arial, sans-serif;
   opacity: 0;
   margin-bottom: 10px;
+  overflow-x: auto;
+  padding-bottom: 24px;
 
   table {
     width: 100%;
+    min-width: 900px;
     border-collapse: collapse;
     border: 1px solid #ccc;
     background-color: #ffffff;
