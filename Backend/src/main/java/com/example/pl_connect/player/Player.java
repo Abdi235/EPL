@@ -52,7 +52,6 @@ public class Player {
         this.team = team;
     }
 
-    // ✅ Getter and Setter for id
     public Long getId() {
         return id;
     }
