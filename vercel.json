@@ -1,5 +1,4 @@
 {
-  "framework": null,
-  "rootDirectory": "Frontend",
+  "buildCommand": "npm run build",
   "outputDirectory": "build"
 }
