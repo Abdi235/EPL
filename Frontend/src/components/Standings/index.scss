@@ -1,0 +1,50 @@
+.standings-page {
+  .refresh-button {
+    margin: 8px 0 16px;
+    padding: 10px 14px;
+    border: 1px solid #ffd700;
+    border-radius: 8px;
+    background: transparent;
+    color: #ffd700;
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  .refresh-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .status {
+    color: #ffd700;
+    font-size: 1.2rem;
+    margin: 8px 0 0;
+  }
+
+  .standings-table-wrapper {
+    overflow-x: auto;
+  }
+
+  .standings-table {
+    width: 100%;
+    min-width: 700px;
+    border-collapse: collapse;
+    background: rgba(255, 255, 255, 0.94);
+    color: #172030;
+    border-radius: 10px;
+    overflow: hidden;
+
+    th,
+    td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #d5dbe3;
+    }
+
+    th {
+      background: #37003c;
+      color: #fff;
+      font-size: 1.3rem;
+    }
+  }
+}
