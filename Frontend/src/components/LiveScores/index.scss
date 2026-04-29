@@ -1,0 +1,48 @@
+.live-page,
+.results-page {
+  .refresh-button {
+    margin-top: 8px;
+    padding: 10px 14px;
+    border: 1px solid #ffd700;
+    border-radius: 8px;
+    background: transparent;
+    color: #ffd700;
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  .refresh-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .match-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+  }
+
+  .match-card {
+    background: rgba(10, 15, 29, 0.78);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .teams {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 1.5rem;
+    color: #ffffff;
+  }
+
+  .status,
+  .date {
+    color: #ffd700;
+    font-size: 1.2rem;
+    margin: 8px 0 0;
+  }
+}
