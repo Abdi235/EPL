@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import "./index.scss";
 import AnimatedLetters from "../AnimatedLetters";
+import API_BASE_URL from "../../config/api";
 
 const TeamData = () => {
   const [loading, setLoading] = useState(true);
@@ -29,13 +30,13 @@ const TeamData = () => {
     };
 
     if (teamValue) {
-      fetchData(`http://localhost:9090/api/v1/player?team=${encodeURIComponent(teamValue)}`);
+      fetchData(`${API_BASE_URL}/api/v1/player?team=${encodeURIComponent(teamValue)}`);
     } else if (nationValue) {
-      fetchData(`http://localhost:9090/api/v1/player?nation=${encodeURIComponent(nationValue)}`);
+      fetchData(`${API_BASE_URL}/api/v1/player?nation=${encodeURIComponent(nationValue)}`);
     } else if (positionValue) {
-      fetchData(`http://localhost:9090/api/v1/player?position=${encodeURIComponent(positionValue)}`);
+      fetchData(`${API_BASE_URL}/api/v1/player?position=${encodeURIComponent(positionValue)}`);
     } else if (nameValue) {
-      fetchData(`http://localhost:9090/api/v1/player?name=${encodeURIComponent(nameValue)}`);
+      fetchData(`${API_BASE_URL}/api/v1/player?name=${encodeURIComponent(nameValue)}`);
     } else {
       setLoading(false);
     }

@@ -15,4 +15,6 @@ Note: The backend is currently not being hosted, this will be fixed in one to tw
 - **Frontend**: Seamless integration with a user-friendly ReactJS interface.
 - **Machine Learning**: Created a model to predict match outcomes by integrating data scraping with pandas and machine learning with scikit-learn.
 
+For a detailed implementation checklist and roadmap, see [FEATURE_TRACKER.md](./FEATURE_TRACKER.md).
+
 

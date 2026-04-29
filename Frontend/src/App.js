@@ -8,6 +8,9 @@ import TeamData from './components/TeamData';
 import Nation from "./components/Nation";
 import Position from "./components/Position";
 import Search from "./components/Search";
+import LiveScores from "./components/LiveScores";
+import Results from "./components/Results";
+import Standings from "./components/Standings";
 
 function App() {
   useEffect(() => {
@@ -24,6 +27,9 @@ function App() {
           <Route path="nation" element={<Nation />} />
           <Route path="position" element={<Position />} />
           <Route path="search" element={<Search />} />
+          <Route path="live" element={<LiveScores />} />
+          <Route path="results" element={<Results />} />
+          <Route path="standings" element={<Standings />} />
         </Route>
       </Routes>
     </>

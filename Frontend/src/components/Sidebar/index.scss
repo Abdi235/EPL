@@ -83,6 +83,9 @@
         a.search-link:after { content: "SEARCH"; }
         a.position-link:after { content: "POSITION"; }
         a.nation-link:after { content: "NATION"; }
+        a.live-link:after { content: "LIVE"; }
+        a.results-link:after { content: "RESULTS"; }
+        a.standings-link:after { content: "TABLE"; }
 
         a.active {
             color: #ffd700 !important;

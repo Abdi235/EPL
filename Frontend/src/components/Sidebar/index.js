@@ -1,7 +1,7 @@
 import './index.scss'
 import { Link, NavLink } from "react-router-dom"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faHome, faSearch, faTshirt, faBars, faClose, faUsers, faFlag } from '@fortawesome/free-solid-svg-icons'
+import { faHome, faSearch, faTshirt, faBars, faClose, faUsers, faFlag, faBolt, faTable, faList } from '@fortawesome/free-solid-svg-icons'
 import LogoPL from '../../assets/images/PL.webp'
 import LogoSubtitle from '../../assets/images/sub-logo.png'
 import { useState } from 'react'
@@ -29,6 +29,15 @@ const Sidebar = () => {
                 </NavLink>
                 <NavLink exact="true" activeclassname = "active" className = "search-link" to="/search">
                     <FontAwesomeIcon icon = {faSearch} onClick={() => setShowNav(false)} />
+                </NavLink>
+                <NavLink exact="true" activeclassname = "active" className = "live-link" to="/live">
+                    <FontAwesomeIcon icon = {faBolt} onClick={() => setShowNav(false)} />
+                </NavLink>
+                <NavLink exact="true" activeclassname = "active" className = "results-link" to="/results">
+                    <FontAwesomeIcon icon = {faList} onClick={() => setShowNav(false)} />
+                </NavLink>
+                <NavLink exact="true" activeclassname = "active" className = "standings-link" to="/standings">
+                    <FontAwesomeIcon icon = {faTable} onClick={() => setShowNav(false)} />
                 </NavLink>
                 <FontAwesomeIcon icon = {faClose} size = "3x" className="close-icon" onClick={() => setShowNav(false)} />
             </nav>
