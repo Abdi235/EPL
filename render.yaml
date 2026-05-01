@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: epl-backend
+    runtime: java
+    rootDir: Backend
+    buildCommand: mvn clean package -DskipTests
+    startCommand: java -jar target/*SNAPSHOT.jar
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: DB_URL
+        fromDatabase:
+          name: epl-postgres
+          property: connectionString
+      - key: DB_USERNAME
+        fromDatabase:
+          name: epl-postgres
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: epl-postgres
+          property: password
+      - key: FOOTBALL_API_KEY
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+
+databases:
+  - name: epl-postgres

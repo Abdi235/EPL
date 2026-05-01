@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import API_BASE_URL from "../../config/api";
 import "./index.scss";
 
 const DataHandling = () => {
@@ -12,7 +13,7 @@ const DataHandling = () => {
     const teamValue = params.get('team');
     
     if (teamValue) {
-      axios.get(`http://localhost:9090/api/v1/player?team=${encodeURIComponent(teamValue)}`)
+      axios.get(`${API_BASE_URL}/api/v1/player?team=${encodeURIComponent(teamValue)}`)
         .then(response => {
           setPlayerData(response.data);
           setLoading(false);
