@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 const VOLUME_KEY = 'eplAnthemVolume';
+const LAST_TRACK_INDEX_KEY = 'eplAnthemLastTrackIndex';
 const YT_PLAYLIST_ID = 'PLlmyYmqoMXCsDoF4-oS_cTnwT3Qli-ibh';
 const DEFAULT_VOLUME = 0.08;
 
@@ -8,6 +9,7 @@ const BackgroundAnthems = () => {
   const playerRef = useRef(null);
   const savedVolumeRef = useRef(DEFAULT_VOLUME);
   const tabAutoMutedRef = useRef(false);
+  const userActivatedRef = useRef(false);
   const [playerReady, setPlayerReady] = useState(false);
   const [volume, setVolume] = useState(() => {
     const raw = localStorage.getItem(VOLUME_KEY);
@@ -58,10 +60,26 @@ const BackgroundAnthems = () => {
         },
         events: {
           onReady: (event) => {
-            event.target.setVolume(Math.round(savedVolumeRef.current * 100));
+            // Start muted to satisfy browser autoplay policy.
+            event.target.mute();
+            event.target.setVolume(0);
             event.target.setShuffle(true);
             setPlayerReady(true);
-            event.target.playVideo();
+            const playlist = event.target.getPlaylist?.() || [];
+            if (playlist.length > 0 && event.target.playVideoAt) {
+              const lastIndexRaw = localStorage.getItem(LAST_TRACK_INDEX_KEY);
+              const lastIndex = lastIndexRaw == null ? -1 : Number(lastIndexRaw);
+
+              let nextIndex = Math.floor(Math.random() * playlist.length);
+              if (playlist.length > 1 && Number.isFinite(lastIndex) && nextIndex === lastIndex) {
+                nextIndex = (nextIndex + 1 + Math.floor(Math.random() * (playlist.length - 1))) % playlist.length;
+              }
+
+              localStorage.setItem(LAST_TRACK_INDEX_KEY, String(nextIndex));
+              event.target.playVideoAt(nextIndex);
+            } else {
+              event.target.playVideo();
+            }
           },
         },
       });
@@ -78,9 +96,28 @@ const BackgroundAnthems = () => {
 
   useEffect(() => {
     localStorage.setItem(VOLUME_KEY, String(volume));
-    if (playerRef.current?.setVolume) {
+    if (playerRef.current?.setVolume && userActivatedRef.current) {
+      playerRef.current.unMute?.();
       playerRef.current.setVolume(Math.round(volume * 100));
     }
+  }, [volume]);
+
+  useEffect(() => {
+    const activateAudio = () => {
+      if (userActivatedRef.current || !playerRef.current?.setVolume) return;
+      userActivatedRef.current = true;
+      playerRef.current.unMute?.();
+      playerRef.current.setVolume(Math.round(volume * 100));
+      playerRef.current.playVideo?.();
+    };
+
+    window.addEventListener('pointerdown', activateAudio, { once: true });
+    window.addEventListener('keydown', activateAudio, { once: true });
+
+    return () => {
+      window.removeEventListener('pointerdown', activateAudio);
+      window.removeEventListener('keydown', activateAudio);
+    };
   }, [volume]);
 
   useEffect(() => {
@@ -91,11 +128,15 @@ const BackgroundAnthems = () => {
         tabAutoMutedRef.current = true;
         savedVolumeRef.current = volume;
         setVolume(0);
+        playerRef.current.mute?.();
         playerRef.current.setVolume(0);
       } else if (!document.hidden && tabAutoMutedRef.current) {
         tabAutoMutedRef.current = false;
         setVolume(savedVolumeRef.current || DEFAULT_VOLUME);
-        playerRef.current.setVolume(Math.round((savedVolumeRef.current || DEFAULT_VOLUME) * 100));
+        if (userActivatedRef.current) {
+          playerRef.current.unMute?.();
+          playerRef.current.setVolume(Math.round((savedVolumeRef.current || DEFAULT_VOLUME) * 100));
+        }
       }
     };
 

@@ -11,6 +11,7 @@ import Search from "./components/Search";
 import LiveScores from "./components/LiveScores";
 import Results from "./components/Results";
 import Standings from "./components/Standings";
+import Stats from "./components/Stats";
 
 function App() {
   useEffect(() => {
@@ -30,6 +31,7 @@ function App() {
           <Route path="live" element={<LiveScores />} />
           <Route path="results" element={<Results />} />
           <Route path="standings" element={<Standings />} />
+          <Route path="stats" element={<Stats />} />
         </Route>
       </Routes>
     </>

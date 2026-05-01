@@ -1,3 +1,35 @@
+.App {
+  position: relative;
+  min-height: 100vh;
+}
+
+.stadium-background {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.stadium-background--current {
+  opacity: 1;
+}
+
+.stadium-background--current.is-fading-in {
+  opacity: 0;
+  animation: stadiumFadeIn 1.2s ease-in-out forwards;
+}
+
+@keyframes stadiumFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .page { 
     width: 100%; 
     min-height: 100vh; 
