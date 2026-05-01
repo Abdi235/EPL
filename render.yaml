@@ -2,8 +2,11 @@ services:
   - type: web
     name: epl-backend
     runtime: docker
-    # Path is relative to repo root (not rootDir). Dockerfile lives under Backend/.
-    dockerfilePath: ./Backend/Dockerfile
+    # With rootDir set, dockerfilePath and dockerContext are relative to Backend/
+    # (see Render monorepo docs). ./Dockerfile == repo's Backend/Dockerfile.
+    rootDir: Backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     healthCheckPath: /actuator/health
     envVars:
       - key: SPRING_PROFILES_ACTIVE
