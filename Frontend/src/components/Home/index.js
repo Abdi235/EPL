@@ -5,19 +5,12 @@ import AnimatedLetters from '../AnimatedLetters';
 import './index.scss';
 import bgImage from '../../assets/images/oldTraffordBackground.jpg';
 import epLogo from '../../assets/images/EPLOGO.png';
-import soundIcon from '../../assets/images/soundonandoff.jpg';
 
 const Home = () => {
     const [letterClass, setLetterClass] = useState('text-animate');
     const nameArray = "Welcome to".split("");
     const jobArray = "EPL".split("");
     const playerRef = useRef(null);
-
-    // Get mute state from localStorage or default to true
-    const [isMuted, setIsMuted] = useState(() => {
-        const savedMute = localStorage.getItem('isMuted');
-        return savedMute === null ? true : savedMute === 'true';
-    });
 
     useEffect(() => {
         const timerId = setTimeout(() => {
@@ -47,46 +40,17 @@ const Home = () => {
     }, []);
 
     const onPlayerReady = (event) => {
-        if (isMuted) {
-            event.target.mute();
-        } else {
-            event.target.unMute();
-        }
+        event.target.mute();
         event.target.playVideo();
     };
 
-    const toggleMute = () => {
-        if (!playerRef.current) return;
-
-        if (isMuted) {
-            playerRef.current.unMute();
-            setIsMuted(false);
-            localStorage.setItem('isMuted', 'false');
-        } else {
-            playerRef.current.mute();
-            setIsMuted(true);
-            localStorage.setItem('isMuted', 'true');
-        }
-    };
-
     return (
-        <div
-            className="home-page"
-            style={{
-                backgroundImage: `url(${bgImage})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                width: '100%',
-                height: '100vh',
-                position: 'relative',
-            }}
-        >
-            {/* Overlay for text readability */}
+        <div className="home-page" style={{ backgroundImage: `url(${bgImage})` }}>
             <div className="overlay"></div>
 
-            <div className="container">
+            <div className="container hero-layout">
                 <div className="text-zone">
+                    <p className="eyebrow">Premier League Intelligence Platform</p>
                     <h1>
                         <img src={epLogo} alt="EPL Logo" />
                         <br />
@@ -94,12 +58,24 @@ const Home = () => {
                         <br />
                         <AnimatedLetters letterClass={letterClass} strArray={jobArray} idx={15} />
                     </h1>
-                    <h2>Your home For The Future of EPL Coverage!</h2>
-                    <Link to="/teams" className="flat-button">GET STARTED</Link>
+                    <h2>
+                        Your trusted home for modern EPL coverage, team insights, and data-driven storytelling.
+                    </h2>
+                    <div className="cta-row">
+                        <Link to="/teams" className="flat-button">Get Started</Link>
+                        <Link to="/teams" className="secondary-button">Explore Clubs</Link>
+                    </div>
+                </div>
+
+                <div className="hero-panel">
+                    <p className="panel-label">Featured</p>
+                    <h3>Premier League Best Goals</h3>
+                    <p className="panel-copy">
+                        Watch standout moments while you explore our latest EPL insights.
+                    </p>
                 </div>
             </div>
 
-            {/* YouTube video container */}
             <div className="video-container">
                 <a
                     href="https://www.youtube.com/watch?v=wz1r_VJaJZw"
@@ -119,13 +95,21 @@ const Home = () => {
                         1 HOUR of the Premier League's BEST Goals in the Last 10 Years!
                     </p>
                 </a>
+            </div>
 
-                <img
-                    src={soundIcon}
-                    alt="Toggle Sound"
-                    onClick={toggleMute}
-                    className="mute-icon"
-                />
+            <div className="home-metrics">
+                <div className="metric-card">
+                    <p className="metric-value">20</p>
+                    <p className="metric-label">Premier League Clubs</p>
+                </div>
+                <div className="metric-card">
+                    <p className="metric-value">380</p>
+                    <p className="metric-label">Matches Per Season</p>
+                </div>
+                <div className="metric-card">
+                    <p className="metric-value">100%</p>
+                    <p className="metric-label">Fan-Focused Coverage</p>
+                </div>
             </div>
 
             <Loader type="pacman" />
