@@ -2,8 +2,8 @@ services:
   - type: web
     name: epl-backend
     runtime: docker
-    rootDir: Backend
-    dockerfilePath: ./Dockerfile
+    # Path is relative to repo root (not rootDir). Dockerfile lives under Backend/.
+    dockerfilePath: ./Backend/Dockerfile
     healthCheckPath: /actuator/health
     envVars:
       - key: SPRING_PROFILES_ACTIVE
