@@ -1,28 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import Papa from "papaparse";
 import AnimatedLetters from "../AnimatedLetters";
+import { loadNormalizedMatches } from "../../utils/matchDatasets";
 import "./index.scss";
-
-const parseScore = (value) => {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : null;
-};
-
-const normalizeMatch = (row) => {
-  if (!row?.Date || !row?.Home || !row?.Away) return null;
-  const homeScore = parseScore(row["Home Goals"]);
-  const awayScore = parseScore(row["Away Goals"]);
-  if (homeScore === null || awayScore === null) return null;
-
-  return {
-    season: String(row.Season || "").trim(),
-    date: String(row.Date).trim(),
-    homeTeam: String(row.Home).trim(),
-    awayTeam: String(row.Away).trim(),
-    homeScore,
-    awayScore,
-  };
-};
 
 const seasonSortDesc = (a, b) => String(b).localeCompare(String(a));
 const normalizeText = (value) => String(value || "").trim().toLowerCase();
@@ -70,6 +49,7 @@ const TEAM_LOGOS = {
   "wolverhampton wanderers": "https://media.api-sports.io/football/teams/39.png",
   "sheffield utd": "https://media.api-sports.io/football/teams/62.png",
   "sheffield united": "https://media.api-sports.io/football/teams/62.png",
+  sunderland: "https://media.api-sports.io/football/teams/746.png",
 };
 const CHAMPIONS_LEAGUE_SPOTS = 4;
 const EUROPA_LEAGUE_SPOTS = 2;
@@ -160,10 +140,7 @@ const Standings = () => {
         setIsRefreshing(true);
       }
 
-      const response = await fetch("/matches.2.csv");
-      const csvText = await response.text();
-      const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
-      const normalized = (parsed.data || []).map(normalizeMatch).filter(Boolean);
+      const normalized = await loadNormalizedMatches();
 
       setAllMatches(normalized);
       setLastUpdated(new Date());

@@ -1,50 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import Papa from "papaparse";
 import AnimatedLetters from "../AnimatedLetters";
+import { loadNormalizedMatches } from "../../utils/matchDatasets";
 import "./index.scss";
-
-const parseScore = (value) => {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : null;
-};
-
-const normalizeMatch = (row) => {
-  // Dataset style 1 (league fixtures): Date, Home, Home Goals, Away Goals, Away
-  if (row.Date && row.Home && row.Away) {
-    const homeScore = parseScore(row["Home Goals"]);
-    const awayScore = parseScore(row["Away Goals"]);
-    if (homeScore === null || awayScore === null) return null;
-    return {
-      season: String(row.Season || row.season || "").trim(),
-      date: String(row.Date).trim(),
-      homeTeam: String(row.Home).trim(),
-      awayTeam: String(row.Away).trim(),
-      homeScore,
-      awayScore,
-    };
-  }
-
-  // Dataset style 2 (single-team logs): date, venue, team, opponent, gf, ga
-  if (row.date && row.team && row.opponent && row.venue) {
-    const gf = parseScore(row.gf);
-    const ga = parseScore(row.ga);
-    if (gf === null || ga === null) return null;
-
-    const isHome = String(row.venue).trim().toLowerCase() === "home";
-    return {
-      season: String(row.season || row.Season || "").trim(),
-      date: String(row.date).trim(),
-      homeTeam: isHome ? String(row.team).trim() : String(row.opponent).trim(),
-      awayTeam: isHome ? String(row.opponent).trim() : String(row.team).trim(),
-      homeScore: isHome ? gf : ga,
-      awayScore: isHome ? ga : gf,
-    };
-  }
-
-  return null;
-};
-
-const byDateDesc = (a, b) => String(b.date).localeCompare(String(a.date));
 const normalizeText = (value) => String(value || "").trim().toLowerCase();
 const seasonSortDesc = (a, b) => String(b).localeCompare(String(a));
 const ALL_SEASONS_VALUE = "__all_seasons__";
@@ -87,6 +44,7 @@ const TEAM_LOGOS = {
   "wolverhampton wanderers": "https://media.api-sports.io/football/teams/39.png",
   "sheffield utd": "https://media.api-sports.io/football/teams/62.png",
   "sheffield united": "https://media.api-sports.io/football/teams/62.png",
+  sunderland: "https://media.api-sports.io/football/teams/746.png",
 };
 
 const createInitialRow = (team) => ({
@@ -184,19 +142,7 @@ const Results = () => {
         setIsRefreshing(true);
       }
 
-      // Load canonical match results dataset from public folder.
-      const response = await fetch("/matches.2.csv");
-      const csvText = await response.text();
-
-      const parsed = Papa.parse(csvText, {
-        header: true,
-        skipEmptyLines: true,
-      });
-
-      const normalized = (parsed.data || [])
-        .map(normalizeMatch)
-        .filter(Boolean)
-        .sort(byDateDesc);
+      const normalized = await loadNormalizedMatches();
 
       setMatches(normalized);
       setLastUpdated(new Date());
