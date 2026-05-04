@@ -1,12 +1,17 @@
 /**
  * Spring returns List<Player> as a JSON array. Proxies or misroutes can return HTML (string) or objects.
  */
+function toPlainArray(value) {
+  if (!Array.isArray(value)) return [];
+  return value.filter((row) => row != null && typeof row === "object");
+}
+
 export function normalizePlayerListResponse(data) {
   if (Array.isArray(data)) {
-    return { players: data, invalid: false };
+    return { players: toPlainArray(data), invalid: false };
   }
   if (data && typeof data === "object" && Array.isArray(data.players)) {
-    return { players: data.players, invalid: false };
+    return { players: toPlainArray(data.players), invalid: false };
   }
   return {
     players: [],

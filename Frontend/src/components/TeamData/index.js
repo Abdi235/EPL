@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect, useMemo } from "react";
+import axios from "axios";
 import "./index.scss";
 import AnimatedLetters from "../AnimatedLetters";
 import API_BASE_URL from "../../config/api";
@@ -10,29 +10,38 @@ const TeamData = () => {
   const [error, setError] = useState(null);
   const [playerData, setPlayerData] = useState([]);
   const [playersToShow, setPlayersToShow] = useState(10);
-  const [letterClass] = useState('text-animate');
+  const [letterClass] = useState("text-animate");
+
+  const rowsToShow = useMemo(() => {
+    const base = Array.isArray(playerData) ? playerData : [];
+    const n = Math.max(0, Number(playersToShow) || 0);
+    return base.slice(0, n);
+  }, [playerData, playersToShow]);
 
   useEffect(() => {
+    let cancelled = false;
     const params = new URLSearchParams(window.location.search);
-    const teamValue = params.get('team');
-    const nationValue = params.get('nation');
-    const positionValue = params.get('position');
-    const nameValue = params.get('name');
+    const teamValue = params.get("team");
+    const nationValue = params.get("nation");
+    const positionValue = params.get("position");
+    const nameValue = params.get("name");
 
     const fetchData = async (query) => {
       try {
         const response = await axios.get(query);
+        if (cancelled) return;
         const { players, invalid, hint } = normalizePlayerListResponse(response.data);
+        const safePlayers = Array.isArray(players) ? players : [];
         if (invalid) {
           setError(new Error(hint));
         } else {
           setError(null);
         }
-        setPlayerData(players);
+        setPlayerData(safePlayers);
       } catch (err) {
-        setError(err);
+        if (!cancelled) setError(err);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
@@ -47,6 +56,10 @@ const TeamData = () => {
     } else {
       setLoading(false);
     }
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   if (loading) {
@@ -57,8 +70,10 @@ const TeamData = () => {
     return <p>Error: {error.message}</p>;
   }
 
+  const totalRows = Array.isArray(playerData) ? playerData.length : 0;
+
   return (
-    <div className={`fade-in ${loading ? 'loading' : ''}`}>
+    <div className={`fade-in ${loading ? "loading" : ""}`}>
       <div className="table-container">
         <h1 className="page-title">
           <AnimatedLetters letterClass={letterClass} strArray={"Player Data".split("")} idx={12} />
@@ -83,9 +98,7 @@ const TeamData = () => {
             </tr>
           </thead>
           <tbody>
-            {(Array.isArray(playerData) ? playerData : [])
-              .slice(0, playersToShow)
-              .map((player, index) => (
+            {rowsToShow.map((player, index) => (
               <tr key={player.id || `${player.name}-${index}`}>
                 <td>{player.name}</td>
                 <td>{player.pos}</td>
@@ -105,11 +118,12 @@ const TeamData = () => {
             ))}
           </tbody>
         </table>
-        {Array.isArray(playerData) && playersToShow < playerData.length && (
+        {playersToShow < totalRows && (
           <button
-            onClick={() => setPlayersToShow(playersToShow + 10)}
-            style={{ marginTop: '10px', marginBottom: '10px' }}
-            className={`show-more-button ${loading ? 'loading' : ''}`}
+            type="button"
+            onClick={() => setPlayersToShow((n) => n + 10)}
+            style={{ marginTop: "10px", marginBottom: "10px" }}
+            className={`show-more-button ${loading ? "loading" : ""}`}
           >
             Show More
           </button>

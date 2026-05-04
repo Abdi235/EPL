@@ -10,28 +10,38 @@ const DataHandling = () => {
   const [playerData, setPlayerData] = useState([]);
   
   useEffect(() => {
+    let cancelled = false;
     const params = new URLSearchParams(window.location.search);
-    const teamValue = params.get('team');
-    
+    const teamValue = params.get("team");
+
     if (teamValue) {
-      axios.get(`${API_BASE_URL}/api/v1/player?team=${encodeURIComponent(teamValue)}`)
-        .then(response => {
+      axios
+        .get(`${API_BASE_URL}/api/v1/player?team=${encodeURIComponent(teamValue)}`)
+        .then((response) => {
+          if (cancelled) return;
           const { players, invalid, hint } = normalizePlayerListResponse(response.data);
+          const safePlayers = Array.isArray(players) ? players : [];
           if (invalid) {
             setError(new Error(hint));
           } else {
             setError(null);
           }
-          setPlayerData(players);
+          setPlayerData(safePlayers);
           setLoading(false);
         })
-        .catch(error => {
-          setError(error);
-          setLoading(false);
+        .catch((err) => {
+          if (!cancelled) {
+            setError(err);
+            setLoading(false);
+          }
         });
     } else {
       setLoading(false);
     }
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   if (loading) {
@@ -65,8 +75,8 @@ const DataHandling = () => {
             </tr>
         </thead>
         <tbody>
-            {(Array.isArray(playerData) ? playerData : []).map((player) => (
-            <tr key={player.name}>
+            {(Array.isArray(playerData) ? playerData : []).map((player, rowIndex) => (
+            <tr key={player.id || `${player.name}-${rowIndex}`}>
                 <td>{player.name}</td>
                 <td>{player.pos}</td>
                 <td>{player.age}</td>
