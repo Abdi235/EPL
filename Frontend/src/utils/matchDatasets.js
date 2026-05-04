@@ -1,6 +1,43 @@
 import Papa from "papaparse";
+import API_BASE_URL from "../config/api.js";
 
-const MATCH_SOURCES = ["/matches.2.csv", "/pl_matches_2024_25.csv", "/team_match_stats.csv"];
+const PROXY_PATH_PL_202425 = "v1/match-data/pl_matches_2024_25.csv";
+const PROXY_PATH_E0_2526 = "v1/match-data/football_data_E0_2526.csv";
+
+/** Try Spring Boot (Render/local), then Vercel proxy, then CRA /public. */
+function candidateUrlsForPl202425() {
+  const urls = [];
+  if (API_BASE_URL) {
+    urls.push(`${API_BASE_URL}/api/${PROXY_PATH_PL_202425}`);
+  }
+  if (process.env.NODE_ENV === "production") {
+    urls.push(`/api/render-proxy?__path=${encodeURIComponent(PROXY_PATH_PL_202425)}`);
+  }
+  urls.push("/pl_matches_2024_25.csv");
+  return urls;
+}
+
+function candidateUrlsForFootball2526() {
+  const urls = [];
+  if (API_BASE_URL) {
+    urls.push(`${API_BASE_URL}/api/${PROXY_PATH_E0_2526}`);
+  }
+  if (process.env.NODE_ENV === "production") {
+    urls.push(`/api/render-proxy?__path=${encodeURIComponent(PROXY_PATH_E0_2526)}`);
+  }
+  urls.push("/football_data_E0_2526.csv");
+  return urls;
+}
+
+/**
+ * Historical league file, 2024/25 matches, 2025/26 football-data.co.uk E0 (through ~early May 2026).
+ * Per-team_match_stats.csv was removed — it mixed incomplete scores with full seasons.
+ */
+const MATCH_SOURCES = [
+  { label: "matches.2.csv", urls: () => ["/matches.2.csv"] },
+  { label: "2024/25 matches", urls: candidateUrlsForPl202425 },
+  { label: "2025/26 matches (football-data E0)", urls: candidateUrlsForFootball2526 },
+];
 
 export function parseScore(value) {
   const n = Number(value);
@@ -36,11 +73,34 @@ function parseScoreDashCell(scoreRaw) {
   return { homeScore, awayScore };
 }
 
+function parseFootballDataUkDate(raw) {
+  const s = String(raw ?? "").trim();
+  const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (!m) return s;
+  const dd = m[1].padStart(2, "0");
+  const mm = m[2].padStart(2, "0");
+  return `${m[3]}-${mm}-${dd}`;
+}
+
+/** Align football-data.co.uk names with club logos / prior CSVs. */
+const FOOTBALL_DATA_TEAM_DISPLAY = {
+  "Man City": "Manchester City",
+  "Man United": "Manchester Utd",
+  Newcastle: "Newcastle Utd",
+  "Nott'm Forest": "Nott'ham Forest",
+  Leeds: "Leeds United",
+};
+
+function mapFootballDataTeamName(raw) {
+  const s = String(raw ?? "").trim();
+  return FOOTBALL_DATA_TEAM_DISPLAY[s] || s;
+}
+
 const SEASON_2024_25 = "2024/2025";
+const SEASON_2025_26 = "2025/2026";
 
 /**
- * League-wide results (matches.2.csv), 2024/25 fixtures (pl_matches_2024_25.csv),
- * plus per-team logs (team_match_stats.csv).
+ * League-wide results (matches.2.csv), 2024/25 (pl_matches), 2025/26 (football-data E0).
  */
 export function normalizeMatchRow(row) {
   const dateLeague = row.Date ?? row.date;
@@ -55,6 +115,22 @@ export function normalizeMatchRow(row) {
       awayTeam: String(row.away_team).trim(),
       homeScore: scores.homeScore,
       awayScore: scores.awayScore,
+    };
+  }
+
+  if (row.HomeTeam && row.AwayTeam && dateLeague && row.FTHG !== undefined && row.FTAG !== undefined) {
+    const homeScore = parseScore(row.FTHG);
+    const awayScore = parseScore(row.FTAG);
+    if (homeScore === null || awayScore === null) {
+      return null;
+    }
+    return {
+      season: SEASON_2025_26,
+      date: parseFootballDataUkDate(dateLeague),
+      homeTeam: mapFootballDataTeamName(row.HomeTeam),
+      awayTeam: mapFootballDataTeamName(row.AwayTeam),
+      homeScore,
+      awayScore,
     };
   }
 
@@ -94,24 +170,37 @@ export function normalizeMatchRow(row) {
   return null;
 }
 
-export async function loadNormalizedMatches() {
-  const texts = [];
-  for (const url of MATCH_SOURCES) {
+async function fetchTextFirstOk(urls, label) {
+  const errors = [];
+  for (const url of urls) {
     try {
       const res = await fetch(url);
-      if (!res.ok) {
-        // Historical league file is optional on some deploys; team log may be enough for current season.
-        console.warn(`[matchDatasets] Skipping ${url}: HTTP ${res.status}`);
-        continue;
+      if (res.ok) {
+        return await res.text();
       }
-      texts.push(await res.text());
+      errors.push(`${url} → HTTP ${res.status}`);
     } catch (err) {
-      console.warn(`[matchDatasets] Failed to fetch ${url}`, err);
+      errors.push(`${url} → ${err?.message || err}`);
+    }
+  }
+  console.warn(`[matchDatasets] All fetch attempts failed for ${label}:`, errors.join("; "));
+  return null;
+}
+
+export async function loadNormalizedMatches() {
+  const texts = [];
+  for (const { label, urls } of MATCH_SOURCES) {
+    const urlList = urls();
+    const text = await fetchTextFirstOk(urlList, label);
+    if (text !== null) {
+      texts.push(text);
     }
   }
 
   if (texts.length === 0) {
-    throw new Error("No match CSV files could be loaded. Check that files exist under /public.");
+    throw new Error(
+      "No match CSV files could be loaded. Add CSVs under Frontend/public and/or deploy Backend with match-data on the classpath."
+    );
   }
 
   const merged = [];

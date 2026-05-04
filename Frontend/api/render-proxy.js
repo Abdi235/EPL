@@ -9,7 +9,8 @@
  *
  * Or skip the proxy: set REACT_APP_API_BASE_URL at build time to the same HTTPS URL.
  */
-const ALLOWED_PATH = /^v1\/player(\?|$)/;
+const ALLOWED_PATH =
+  /^v1\/player(\?.*)?$|^v1\/match-data\/(pl_matches_2024_25|football_data_E0_2526|premier_league_stats_2024_25)\.csv$/;
 
 function resolveBackendOrigin() {
   const candidates = [
