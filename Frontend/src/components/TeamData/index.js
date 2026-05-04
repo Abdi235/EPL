@@ -3,6 +3,7 @@ import axios from 'axios';
 import "./index.scss";
 import AnimatedLetters from "../AnimatedLetters";
 import API_BASE_URL from "../../config/api";
+import { normalizePlayerListResponse } from "../../utils/playerList";
 
 const TeamData = () => {
   const [loading, setLoading] = useState(true);
@@ -21,7 +22,13 @@ const TeamData = () => {
     const fetchData = async (query) => {
       try {
         const response = await axios.get(query);
-        setPlayerData(response.data);
+        const { players, invalid, hint } = normalizePlayerListResponse(response.data);
+        if (invalid) {
+          setError(new Error(hint));
+        } else {
+          setError(null);
+        }
+        setPlayerData(players);
       } catch (err) {
         setError(err);
       } finally {
@@ -76,7 +83,9 @@ const TeamData = () => {
             </tr>
           </thead>
           <tbody>
-            {playerData.slice(0, playersToShow).map((player, index) => (
+            {(Array.isArray(playerData) ? playerData : [])
+              .slice(0, playersToShow)
+              .map((player, index) => (
               <tr key={player.id || `${player.name}-${index}`}>
                 <td>{player.name}</td>
                 <td>{player.pos}</td>
@@ -96,7 +105,7 @@ const TeamData = () => {
             ))}
           </tbody>
         </table>
-        {playersToShow < playerData.length && (
+        {Array.isArray(playerData) && playersToShow < playerData.length && (
           <button
             onClick={() => setPlayersToShow(playersToShow + 10)}
             style={{ marginTop: '10px', marginBottom: '10px' }}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import API_BASE_URL from "../../config/api";
+import { normalizePlayerListResponse } from "../../utils/playerList";
 import "./index.scss";
 
 const DataHandling = () => {
@@ -15,7 +16,13 @@ const DataHandling = () => {
     if (teamValue) {
       axios.get(`${API_BASE_URL}/api/v1/player?team=${encodeURIComponent(teamValue)}`)
         .then(response => {
-          setPlayerData(response.data);
+          const { players, invalid, hint } = normalizePlayerListResponse(response.data);
+          if (invalid) {
+            setError(new Error(hint));
+          } else {
+            setError(null);
+          }
+          setPlayerData(players);
           setLoading(false);
         })
         .catch(error => {
@@ -58,7 +65,7 @@ const DataHandling = () => {
             </tr>
         </thead>
         <tbody>
-            {playerData.map(player => (
+            {(Array.isArray(playerData) ? playerData : []).map((player) => (
             <tr key={player.name}>
                 <td>{player.name}</td>
                 <td>{player.pos}</td>
