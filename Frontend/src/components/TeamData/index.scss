@@ -11,6 +11,43 @@
   }
 }
 
+.player-data-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  margin: 0 0 20px;
+  font-size: 15px;
+  color: #e5e7eb;
+}
+
+.player-data-season-label {
+  font-weight: 600;
+  color: #ffd700;
+}
+
+.player-season-select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(8, 18, 38, 0.9);
+  color: #f3f4f6;
+  font-size: 15px;
+  min-width: 160px;
+}
+
+.player-data-season-hint {
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.player-data-empty-hint {
+  color: #d1d5db;
+  margin: 0 0 20px;
+  max-width: 48rem;
+  line-height: 1.5;
+}
+
 .table-container {
   .page-title{
     font-size: 60px;

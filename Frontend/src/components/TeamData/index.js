@@ -1,15 +1,28 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import "./index.scss";
 import AnimatedLetters from "../AnimatedLetters";
-import { loadAllPlayersFromPublicCsv, filterPlayers } from "../../utils/playerDataset";
+import {
+  loadPlayersForSeason,
+  filterPlayers,
+  normalizePlayerSeasonParam,
+  PLAYER_SEASON_CONFIG,
+  formatPlayerCell,
+} from "../../utils/playerDataset";
 import { axiosErrorMessage } from "../../utils/axiosErrorMessage";
 
 const TeamData = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [playerData, setPlayerData] = useState([]);
   const [playersToShow, setPlayersToShow] = useState(10);
   const [letterClass] = useState("text-animate");
+
+  const season = useMemo(
+    () => normalizePlayerSeasonParam(searchParams.get("season")),
+    [searchParams]
+  );
 
   const rowsToShow = useMemo(() => {
     const base = Array.isArray(playerData) ? playerData : [];
@@ -19,15 +32,14 @@ const TeamData = () => {
 
   useEffect(() => {
     let cancelled = false;
-    const params = new URLSearchParams(window.location.search);
-    const teamValue = params.get("team");
-    const nationValue = params.get("nation");
-    const positionValue = params.get("position");
-    const nameValue = params.get("name");
+    const teamValue = searchParams.get("team");
+    const nationValue = searchParams.get("nation");
+    const positionValue = searchParams.get("position");
+    const nameValue = searchParams.get("name");
 
     const run = async () => {
       try {
-        const all = await loadAllPlayersFromPublicCsv();
+        const all = await loadPlayersForSeason(season);
         if (cancelled) return;
         const filtered = filterPlayers(all, {
           team: teamValue,
@@ -45,15 +57,25 @@ const TeamData = () => {
     };
 
     if (teamValue || nationValue || positionValue || nameValue) {
+      setLoading(true);
       run();
     } else {
       setLoading(false);
+      setPlayerData([]);
+      setError(null);
     }
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [searchParams, season]);
+
+  const setSeasonInUrl = (nextSeason) => {
+    const next = new URLSearchParams(searchParams);
+    next.set("season", nextSeason);
+    setSearchParams(next, { replace: true });
+    setPlayersToShow(10);
+  };
 
   if (loading) {
     return <p>Loading...</p>;
@@ -64,6 +86,11 @@ const TeamData = () => {
   }
 
   const totalRows = Array.isArray(playerData) ? playerData.length : 0;
+  const hasFilter =
+    searchParams.get("team") ||
+    searchParams.get("nation") ||
+    searchParams.get("position") ||
+    searchParams.get("name");
 
   return (
     <div className={`fade-in ${loading ? "loading" : ""}`}>
@@ -71,6 +98,38 @@ const TeamData = () => {
         <h1 className="page-title">
           <AnimatedLetters letterClass={letterClass} strArray={"Player Data".split("")} idx={12} />
         </h1>
+        {hasFilter && (
+          <div className="player-data-toolbar">
+            <label className="player-data-season-label" htmlFor="player-season">
+              Season
+            </label>
+            <select
+              id="player-season"
+              className="player-season-select"
+              value={season}
+              onChange={(e) => setSeasonInUrl(e.target.value)}
+            >
+              {PLAYER_SEASON_CONFIG.map((c) => (
+                <option key={c.season} value={c.season}>
+                  {c.season.replace("/", " / ")}
+                </option>
+              ))}
+            </select>
+            <span className="player-data-season-hint">
+              Roster and stats for the selected season only.
+            </span>
+          </div>
+        )}
+        {!hasFilter && (
+          <p className="player-data-empty-hint">
+            Open a squad from Teams, Nation, Position, or Search — then pick a season to see that roster and
+            stats.
+          </p>
+        )}
+        {hasFilter && totalRows === 0 && (
+          <p className="player-data-empty-hint">No players found for this season and filters.</p>
+        )}
+        {hasFilter && (
         <table>
           <thead>
             <tr>
@@ -93,25 +152,26 @@ const TeamData = () => {
           <tbody>
             {rowsToShow.map((player, index) => (
               <tr key={player.id || `${player.name}-${index}`}>
-                <td>{player.name}</td>
-                <td>{player.pos}</td>
-                <td>{player.age}</td>
-                <td>{player.mp}</td>
-                <td>{player.starts}</td>
-                <td>{player.min}</td>
-                <td>{player.gls}</td>
-                <td>{player.ast}</td>
-                <td>{player.pk}</td>
-                <td>{player.crdy}</td>
-                <td>{player.crdr}</td>
-                <td>{player.xg}</td>
-                <td>{player.xag}</td>
-                <td>{player.team}</td>
+                <td>{formatPlayerCell(player.name)}</td>
+                <td>{formatPlayerCell(player.pos)}</td>
+                <td>{formatPlayerCell(player.age)}</td>
+                <td>{formatPlayerCell(player.mp)}</td>
+                <td>{formatPlayerCell(player.starts)}</td>
+                <td>{formatPlayerCell(player.min)}</td>
+                <td>{formatPlayerCell(player.gls)}</td>
+                <td>{formatPlayerCell(player.ast)}</td>
+                <td>{formatPlayerCell(player.pk)}</td>
+                <td>{formatPlayerCell(player.crdy)}</td>
+                <td>{formatPlayerCell(player.crdr)}</td>
+                <td>{formatPlayerCell(player.xg)}</td>
+                <td>{formatPlayerCell(player.xag)}</td>
+                <td>{formatPlayerCell(player.team)}</td>
               </tr>
             ))}
           </tbody>
         </table>
-        {playersToShow < totalRows && (
+        )}
+        {hasFilter && playersToShow < totalRows && (
           <button
             type="button"
             onClick={() => setPlayersToShow((n) => n + 10)}

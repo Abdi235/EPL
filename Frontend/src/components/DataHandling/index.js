@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
 import "./index.scss";
-import { loadAllPlayersFromPublicCsv, filterPlayers } from "../../utils/playerDataset";
+import {
+  loadPlayersForSeason,
+  filterPlayers,
+  normalizePlayerSeasonParam,
+  formatPlayerCell,
+} from "../../utils/playerDataset";
 import { axiosErrorMessage } from "../../utils/axiosErrorMessage";
 
 const DataHandling = () => {
@@ -12,11 +17,12 @@ const DataHandling = () => {
     let cancelled = false;
     const params = new URLSearchParams(window.location.search);
     const teamValue = params.get("team");
+    const season = normalizePlayerSeasonParam(params.get("season"));
 
     if (teamValue) {
       (async () => {
         try {
-          const all = await loadAllPlayersFromPublicCsv();
+          const all = await loadPlayersForSeason(season);
           if (cancelled) return;
           const filtered = filterPlayers(all, { team: teamValue });
           setPlayerData(filtered);
@@ -68,20 +74,20 @@ const DataHandling = () => {
         <tbody>
           {(Array.isArray(playerData) ? playerData : []).map((player, rowIndex) => (
             <tr key={player.id || `${player.name}-${rowIndex}`}>
-              <td>{player.name}</td>
-              <td>{player.pos}</td>
-              <td>{player.age}</td>
-              <td>{player.mp}</td>
-              <td>{player.starts}</td>
-              <td>{player.min}</td>
-              <td>{player.gls}</td>
-              <td>{player.ast}</td>
-              <td>{player.pk}</td>
-              <td>{player.crdy}</td>
-              <td>{player.crdr}</td>
-              <td>{player.xg}</td>
-              <td>{player.xag}</td>
-              <td>{player.team}</td>
+              <td>{formatPlayerCell(player.name)}</td>
+              <td>{formatPlayerCell(player.pos)}</td>
+              <td>{formatPlayerCell(player.age)}</td>
+              <td>{formatPlayerCell(player.mp)}</td>
+              <td>{formatPlayerCell(player.starts)}</td>
+              <td>{formatPlayerCell(player.min)}</td>
+              <td>{formatPlayerCell(player.gls)}</td>
+              <td>{formatPlayerCell(player.ast)}</td>
+              <td>{formatPlayerCell(player.pk)}</td>
+              <td>{formatPlayerCell(player.crdy)}</td>
+              <td>{formatPlayerCell(player.crdr)}</td>
+              <td>{formatPlayerCell(player.xg)}</td>
+              <td>{formatPlayerCell(player.xag)}</td>
+              <td>{formatPlayerCell(player.team)}</td>
             </tr>
           ))}
         </tbody>

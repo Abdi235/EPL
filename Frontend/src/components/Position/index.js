@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import "./index.scss";
 import AnimatedLetters from "../AnimatedLetters";
 import positionData from "../../data/positions.json";
+import { defaultPlayerSeason } from "../../utils/playerDataset";
 
 const Positions = () => {
     const [letterClass, setLetterClass] = useState('text-animate');
@@ -39,7 +40,12 @@ const Positions = () => {
                 <img src={position.cover} alt="positions" className="teams-image" />
                 <div className="content">
                   <p className="title">{position.title}</p>
-                  <Link className="btn" to={`/data?position=${encodeURIComponent(position.search)}`}>
+                  <Link
+                    className="btn"
+                    to={`/data?position=${encodeURIComponent(position.search)}&season=${encodeURIComponent(
+                      defaultPlayerSeason()
+                    )}`}
+                  >
                     View
                   </Link>
                 </div>

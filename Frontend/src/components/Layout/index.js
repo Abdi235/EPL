@@ -4,6 +4,10 @@ import BackgroundAnthems from '../BackgroundAnthems'
 import { Outlet } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 
+/** Dark tint over photos — keep text readable while letting imagery show through clearly */
+const BG_OVERLAY =
+    'linear-gradient(rgba(6, 12, 24, 0.38), rgba(3, 8, 18, 0.55))'
+
 const STADIUM_BACKGROUNDS = [
     '/stadiums/stadium-1.png',
     '/stadiums/stadium-2.png',
@@ -48,13 +52,13 @@ const Layout = () => {
             {previousIndex !== null && (
                 <div
                     className="stadium-background"
-                    style={{ backgroundImage: `linear-gradient(rgba(6, 12, 24, 0.68), rgba(3, 8, 18, 0.84)), url(${encodeURI(STADIUM_BACKGROUNDS[previousIndex])})` }}
+                    style={{ backgroundImage: `${BG_OVERLAY}, url(${encodeURI(STADIUM_BACKGROUNDS[previousIndex])})` }}
                     aria-hidden="true"
                 />
             )}
             <div
                 className={`stadium-background stadium-background--current ${isFading ? 'is-fading-in' : ''}`}
-                style={{ backgroundImage: `linear-gradient(rgba(6, 12, 24, 0.68), rgba(3, 8, 18, 0.84)), url(${encodeURI(STADIUM_BACKGROUNDS[backgroundIndex])})` }}
+                style={{ backgroundImage: `${BG_OVERLAY}, url(${encodeURI(STADIUM_BACKGROUNDS[backgroundIndex])})` }}
                 aria-hidden="true"
             />
             <Sidebar />

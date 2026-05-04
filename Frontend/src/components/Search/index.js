@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Loader from "react-loaders";
 import "./index.scss";
 import AnimatedLetters from "../AnimatedLetters";
+import { defaultPlayerSeason } from "../../utils/playerDataset";
 
 const Search = () => {
     const [letterClass, setLetterClass] = useState('text-animate');
@@ -22,7 +23,9 @@ const Search = () => {
     };
 
     const handleGoButtonClick = () => {
-        window.location.href = `/data?name=${encodeURIComponent(searchQuery)}`;
+        window.location.href = `/data?name=${encodeURIComponent(searchQuery)}&season=${encodeURIComponent(
+          defaultPlayerSeason()
+        )}`;
     };
 
     return (

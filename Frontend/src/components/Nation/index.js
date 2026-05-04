@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import "./index.scss";
 import AnimatedLetters from "../AnimatedLetters";
 import nationData from "../../data/nations.json";
+import { defaultPlayerSeason } from "../../utils/playerDataset";
 import { ReactCountryFlag } from 'react-country-flag';
 
 const Nations = () => {
@@ -47,7 +48,12 @@ const Nations = () => {
                 />
                 <div className="content">
                   <p className="title">{country.name}</p>
-                  <Link className="btn" to={`/data?nation=${encodeURIComponent(country.search)}`}>
+                  <Link
+                    className="btn"
+                    to={`/data?nation=${encodeURIComponent(country.search)}&season=${encodeURIComponent(
+                      defaultPlayerSeason()
+                    )}`}
+                  >
                     View
                   </Link>
                 </div>
