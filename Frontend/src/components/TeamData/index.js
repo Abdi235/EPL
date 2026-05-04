@@ -1,10 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
-import axios from "axios";
 import "./index.scss";
 import AnimatedLetters from "../AnimatedLetters";
-import API_BASE_URL from "../../config/api";
-import { normalizePlayerListResponse } from "../../utils/playerList";
-import { buildPlayerListUrl } from "../../utils/playerApiUrl";
+import { loadAllPlayersFromPublicCsv, filterPlayers } from "../../utils/playerDataset";
 import { axiosErrorMessage } from "../../utils/axiosErrorMessage";
 
 const TeamData = () => {
@@ -28,18 +25,18 @@ const TeamData = () => {
     const positionValue = params.get("position");
     const nameValue = params.get("name");
 
-    const fetchData = async (query) => {
+    const run = async () => {
       try {
-        const response = await axios.get(query);
+        const all = await loadAllPlayersFromPublicCsv();
         if (cancelled) return;
-        const { players, invalid, hint } = normalizePlayerListResponse(response.data);
-        const safePlayers = Array.isArray(players) ? players : [];
-        if (invalid) {
-          setError(new Error(hint));
-        } else {
-          setError(null);
-        }
-        setPlayerData(safePlayers);
+        const filtered = filterPlayers(all, {
+          team: teamValue,
+          nation: nationValue,
+          position: positionValue,
+          name: nameValue,
+        });
+        setPlayerData(filtered);
+        setError(null);
       } catch (err) {
         if (!cancelled) setError(new Error(axiosErrorMessage(err)));
       } finally {
@@ -47,14 +44,8 @@ const TeamData = () => {
       }
     };
 
-    if (teamValue) {
-      fetchData(buildPlayerListUrl(API_BASE_URL, { team: teamValue }));
-    } else if (nationValue) {
-      fetchData(buildPlayerListUrl(API_BASE_URL, { nation: nationValue }));
-    } else if (positionValue) {
-      fetchData(buildPlayerListUrl(API_BASE_URL, { position: positionValue }));
-    } else if (nameValue) {
-      fetchData(buildPlayerListUrl(API_BASE_URL, { name: nameValue }));
+    if (teamValue || nationValue || positionValue || nameValue) {
+      run();
     } else {
       setLoading(false);
     }
