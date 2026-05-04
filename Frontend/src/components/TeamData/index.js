@@ -4,6 +4,7 @@ import "./index.scss";
 import AnimatedLetters from "../AnimatedLetters";
 import API_BASE_URL from "../../config/api";
 import { normalizePlayerListResponse } from "../../utils/playerList";
+import { buildPlayerListUrl } from "../../utils/playerApiUrl";
 
 const TeamData = () => {
   const [loading, setLoading] = useState(true);
@@ -46,13 +47,13 @@ const TeamData = () => {
     };
 
     if (teamValue) {
-      fetchData(`${API_BASE_URL}/api/v1/player?team=${encodeURIComponent(teamValue)}`);
+      fetchData(buildPlayerListUrl(API_BASE_URL, { team: teamValue }));
     } else if (nationValue) {
-      fetchData(`${API_BASE_URL}/api/v1/player?nation=${encodeURIComponent(nationValue)}`);
+      fetchData(buildPlayerListUrl(API_BASE_URL, { nation: nationValue }));
     } else if (positionValue) {
-      fetchData(`${API_BASE_URL}/api/v1/player?position=${encodeURIComponent(positionValue)}`);
+      fetchData(buildPlayerListUrl(API_BASE_URL, { position: positionValue }));
     } else if (nameValue) {
-      fetchData(`${API_BASE_URL}/api/v1/player?name=${encodeURIComponent(nameValue)}`);
+      fetchData(buildPlayerListUrl(API_BASE_URL, { name: nameValue }));
     } else {
       setLoading(false);
     }

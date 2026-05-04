@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import API_BASE_URL from "../../config/api";
 import { normalizePlayerListResponse } from "../../utils/playerList";
+import { buildPlayerListUrl } from "../../utils/playerApiUrl";
 import "./index.scss";
 
 const DataHandling = () => {
@@ -16,7 +17,7 @@ const DataHandling = () => {
 
     if (teamValue) {
       axios
-        .get(`${API_BASE_URL}/api/v1/player?team=${encodeURIComponent(teamValue)}`)
+        .get(buildPlayerListUrl(API_BASE_URL, { team: teamValue }))
         .then((response) => {
           if (cancelled) return;
           const { players, invalid, hint } = normalizePlayerListResponse(response.data);
