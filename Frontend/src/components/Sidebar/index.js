@@ -2,8 +2,7 @@ import './index.scss'
 import { Link, NavLink } from "react-router-dom"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHome, faSearch, faTshirt, faBars, faClose, faUsers, faFlag, faBolt, faTable, faList, faChartBar } from '@fortawesome/free-solid-svg-icons'
-import LogoPL from '../../assets/images/PL.webp'
-import LogoSubtitle from '../../assets/images/sub-logo.png'
+import epLogo from '../../assets/images/EPLOGO.png'
 import { useState } from 'react'
 
 const Sidebar = () => {
@@ -63,8 +62,8 @@ const Sidebar = () => {
     return(
         <div className = 'nav-bar'> 
             <Link className = "logo" to="/"> 
-                <img src = {LogoPL} alt="logo" />
-                <img className="sub-logo" src = {LogoSubtitle} alt="PremierZone" />
+                <img src={epLogo} alt="" aria-hidden="true" />
+                <span className="logo-wordmark">PremierZone</span>
             </Link>
             <nav className={showNav ? 'mobile-show' : ""} aria-label="Primary navigation">
                 <NavLink exact="true" activeclassname = "active" to="/" aria-label="Home">

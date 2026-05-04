@@ -65,15 +65,24 @@ export function normalizeMatchRow(row) {
 }
 
 export async function loadNormalizedMatches() {
-  const texts = await Promise.all(
-    MATCH_SOURCES.map(async (url) => {
+  const texts = [];
+  for (const url of MATCH_SOURCES) {
+    try {
       const res = await fetch(url);
       if (!res.ok) {
-        throw new Error(`Failed to load ${url}: ${res.status}`);
+        // Historical league file is optional on some deploys; team log may be enough for current season.
+        console.warn(`[matchDatasets] Skipping ${url}: HTTP ${res.status}`);
+        continue;
       }
-      return res.text();
-    })
-  );
+      texts.push(await res.text());
+    } catch (err) {
+      console.warn(`[matchDatasets] Failed to fetch ${url}`, err);
+    }
+  }
+
+  if (texts.length === 0) {
+    throw new Error("No match CSV files could be loaded. Check that files exist under /public.");
+  }
 
   const merged = [];
   for (const text of texts) {

@@ -12,19 +12,29 @@
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 
     .logo {
-        padding: 8px 15px; 
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 6px 15px 8px;
+        text-decoration: none;
+        color: inherit;
         
         img { 
             display: block; 
-            margin: 3px auto; 
-            margin-left: 15px;
-            width: 60px; 
+            margin: 0 0 0 15px;
+            max-height: 64px;
+            width: auto;
             height: auto;
-            
-            &.sub-logo { 
-                width: 120px; 
-                margin-left: -5px;
-            }
+        }
+
+        .logo-wordmark {
+            margin: 5px 0 0 15px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            color: #ffd700;
+            line-height: 1;
+            white-space: nowrap;
         }
     }
 

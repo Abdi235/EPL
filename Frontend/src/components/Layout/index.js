@@ -10,6 +10,13 @@ const STADIUM_BACKGROUNDS = [
     '/stadiums/stadium-4.png',
     '/stadiums/stadium-5.png',
     '/stadiums/stadium-6.png',
+    '/Background/download.jpg',
+    '/Background/images.jpg',
+    '/Background/download (1).jpg',
+    '/Background/download (2).jpg',
+    '/Background/download (3).jpg',
+    '/Background/download (4).jpg',
+    '/Background/download (5).jpg',
 ]
 
 const Layout = () => { 
@@ -41,13 +48,13 @@ const Layout = () => {
             {previousIndex !== null && (
                 <div
                     className="stadium-background"
-                    style={{ backgroundImage: `linear-gradient(rgba(6, 12, 24, 0.68), rgba(3, 8, 18, 0.84)), url(${STADIUM_BACKGROUNDS[previousIndex]})` }}
+                    style={{ backgroundImage: `linear-gradient(rgba(6, 12, 24, 0.68), rgba(3, 8, 18, 0.84)), url(${encodeURI(STADIUM_BACKGROUNDS[previousIndex])})` }}
                     aria-hidden="true"
                 />
             )}
             <div
                 className={`stadium-background stadium-background--current ${isFading ? 'is-fading-in' : ''}`}
-                style={{ backgroundImage: `linear-gradient(rgba(6, 12, 24, 0.68), rgba(3, 8, 18, 0.84)), url(${STADIUM_BACKGROUNDS[backgroundIndex]})` }}
+                style={{ backgroundImage: `linear-gradient(rgba(6, 12, 24, 0.68), rgba(3, 8, 18, 0.84)), url(${encodeURI(STADIUM_BACKGROUNDS[backgroundIndex])})` }}
                 aria-hidden="true"
             />
             <Sidebar />

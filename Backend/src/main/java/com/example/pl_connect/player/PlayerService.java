@@ -5,8 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 public class PlayerService {
@@ -24,31 +25,41 @@ public class PlayerService {
 
     public List<Player> getPlayersFromTeam(String teamName) {
         return playerRepository.findAll().stream()
-                .filter(player -> teamName.equals(player.getTeam()))
+                .filter(player -> Objects.equals(teamName, player.getTeam()))
                 .collect(Collectors.toList());
     }
 
     public List<Player> getPlayersByName(String searchText) {
+        String q = searchText.toLowerCase();
         return playerRepository.findAll().stream()
-                .filter(player -> player.getName().toLowerCase().contains(searchText.toLowerCase()))
+                .filter(player -> Optional.ofNullable(player.getName())
+                        .map(n -> n.toLowerCase().contains(q))
+                        .orElse(false))
                 .collect(Collectors.toList());
     }
 
     public List<Player> getPlayersByPos(String searchText) {
+        String q = searchText.toLowerCase();
         return playerRepository.findAll().stream()
-                .filter(player -> player.getPos().toLowerCase().contains(searchText.toLowerCase()))
+                .filter(player -> Optional.ofNullable(player.getPos())
+                        .map(p -> p.toLowerCase().contains(q))
+                        .orElse(false))
                 .collect(Collectors.toList());
     }
 
     public List<Player> getPlayersByNation(String searchText) {
+        String q = searchText.toLowerCase();
         return playerRepository.findAll().stream()
-                .filter(player -> player.getNation().toLowerCase().contains(searchText.toLowerCase()))
+                .filter(player -> Optional.ofNullable(player.getNation())
+                        .map(n -> n.toLowerCase().contains(q))
+                        .orElse(false))
                 .collect(Collectors.toList());
     }
 
     public List<Player> getPlayersByTeamAndPosition(String team, String position){
         return playerRepository.findAll().stream()
-                .filter(player -> team.equals(player.getTeam()) && position.equals(player.getPos()))
+                .filter(player -> Objects.equals(team, player.getTeam())
+                        && Objects.equals(position, player.getPos()))
                 .collect(Collectors.toList());
     }
     public Player addPlayer(Player player) {
