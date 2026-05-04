@@ -5,6 +5,7 @@ import AnimatedLetters from "../AnimatedLetters";
 import API_BASE_URL from "../../config/api";
 import { normalizePlayerListResponse } from "../../utils/playerList";
 import { buildPlayerListUrl } from "../../utils/playerApiUrl";
+import { axiosErrorMessage } from "../../utils/axiosErrorMessage";
 
 const TeamData = () => {
   const [loading, setLoading] = useState(true);
@@ -40,7 +41,7 @@ const TeamData = () => {
         }
         setPlayerData(safePlayers);
       } catch (err) {
-        if (!cancelled) setError(err);
+        if (!cancelled) setError(new Error(axiosErrorMessage(err)));
       } finally {
         if (!cancelled) setLoading(false);
       }

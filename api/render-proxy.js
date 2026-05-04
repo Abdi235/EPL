@@ -3,19 +3,33 @@
  */
 const ALLOWED_PATH = /^v1\/player(\?|$)/;
 
+function resolveBackendOrigin() {
+  const candidates = [
+    process.env.RENDER_API_ORIGIN,
+    process.env.API_BACKEND_ORIGIN,
+    process.env.BACKEND_URL,
+    process.env.RENDER_URL,
+  ];
+  for (const c of candidates) {
+    const v = c?.trim().replace(/\/+$/, "");
+    if (v) return v;
+  }
+  return "";
+}
+
 module.exports = async (req, res) => {
   if (req.method === "OPTIONS") {
     res.status(204).end();
     return;
   }
 
-  const origin = process.env.RENDER_API_ORIGIN?.trim().replace(/\/+$/, "");
+  const origin = resolveBackendOrigin();
   if (!origin) {
-    res.status(500).setHeader("Content-Type", "application/json; charset=utf-8");
+    res.status(503).setHeader("Content-Type", "application/json; charset=utf-8");
     res.end(
       JSON.stringify({
         message:
-          "Missing RENDER_API_ORIGIN. In Vercel → Environment Variables, set RENDER_API_ORIGIN to your Render HTTPS URL (e.g. https://my-app.onrender.com), then redeploy.",
+          "Backend URL is not configured. In Vercel → Settings → Environment Variables, add RENDER_API_ORIGIN with your Render HTTPS URL (no trailing slash), then redeploy. Example: https://your-service.onrender.com",
       })
     );
     return;
@@ -54,12 +68,23 @@ module.exports = async (req, res) => {
 
   const targetUrl = `${origin}/api/${decoded}`;
 
-  const upstream = await fetch(targetUrl, {
-    method: "GET",
-    headers: {
-      Accept: req.headers.accept || "application/json",
-    },
-  });
+  let upstream;
+  try {
+    upstream = await fetch(targetUrl, {
+      method: "GET",
+      headers: {
+        Accept: req.headers.accept || "application/json",
+      },
+    });
+  } catch (e) {
+    res.status(502).setHeader("Content-Type", "application/json; charset=utf-8");
+    res.end(
+      JSON.stringify({
+        message: `Could not reach backend at ${origin}. Check RENDER_API_ORIGIN and that Render is running. ${e?.message || ""}`.trim(),
+      })
+    );
+    return;
+  }
 
   const text = await upstream.text();
   const ct = upstream.headers.get("content-type") || "application/json; charset=utf-8";

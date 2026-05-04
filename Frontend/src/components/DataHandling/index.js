@@ -3,6 +3,7 @@ import axios from 'axios';
 import API_BASE_URL from "../../config/api";
 import { normalizePlayerListResponse } from "../../utils/playerList";
 import { buildPlayerListUrl } from "../../utils/playerApiUrl";
+import { axiosErrorMessage } from "../../utils/axiosErrorMessage";
 import "./index.scss";
 
 const DataHandling = () => {
@@ -32,7 +33,7 @@ const DataHandling = () => {
         })
         .catch((err) => {
           if (!cancelled) {
-            setError(err);
+            setError(new Error(axiosErrorMessage(err)));
             setLoading(false);
           }
         });
