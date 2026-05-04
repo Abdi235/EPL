@@ -2,8 +2,10 @@
 
 PremierZone is a comprehensive project designed to scrape match statistics for over 700 players, manipulate and present the data dynamically, and predict match outcomes using machine learning. The project is divided into four main components: Backend, Frontend, Data Scraping, and Machine Learning.
 
-![PremierZone Screenshot](![Uploading Screenshot (370).png…]()
-)
+## 📸 Preview
+
+![PremierZone Dashboard](./assets/premierzone-dashboard.png)
+
 
 You can find the [project here!](https://epl-fhq4.vercel.app/)
 
