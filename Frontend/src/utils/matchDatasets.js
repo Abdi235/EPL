@@ -1,15 +1,18 @@
 import Papa from "papaparse";
 
-const MATCH_SOURCES = ["/matches.2.csv", "/team_match_stats.csv"];
+const MATCH_SOURCES = ["/matches.2.csv", "/pl_matches_2024_25.csv", "/team_match_stats.csv"];
 
 export function parseScore(value) {
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
 }
 
-/** Unify season labels so 2025/26 data lines up with older "YYYY/YYYY" strings. */
+/** Unify season labels so shorthand and hyphen forms match "YYYY/YYYY" in the UI. */
 export function normalizeSeason(raw) {
   const s = String(raw ?? "").trim();
+  if (s === "2425" || s === "2024-25" || s === "2024-2025") {
+    return "2024/2025";
+  }
   if (s === "2526" || s === "2025-26" || s === "2025-2026") {
     return "2025/2026";
   }
@@ -22,11 +25,38 @@ function matchKey(m) {
   return `${m.season}|${m.date}|${String(m.homeTeam).toLowerCase()}|${String(m.awayTeam).toLowerCase()}`;
 }
 
+function parseScoreDashCell(scoreRaw) {
+  const s = String(scoreRaw ?? "").trim();
+  if (!s) return null;
+  const parts = s.split(/\s*[–-]\s*/);
+  if (parts.length !== 2) return null;
+  const homeScore = parseScore(parts[0]);
+  const awayScore = parseScore(parts[1]);
+  if (homeScore === null || awayScore === null) return null;
+  return { homeScore, awayScore };
+}
+
+const SEASON_2024_25 = "2024/2025";
+
 /**
- * League-wide results (matches.2.csv) plus per-team logs (team_match_stats.csv, 2025/26).
+ * League-wide results (matches.2.csv), 2024/25 fixtures (pl_matches_2024_25.csv),
+ * plus per-team logs (team_match_stats.csv).
  */
 export function normalizeMatchRow(row) {
   const dateLeague = row.Date ?? row.date;
+
+  if (row.home_team && row.away_team && row.date) {
+    const scores = parseScoreDashCell(row.score);
+    if (!scores) return null;
+    return {
+      season: normalizeSeason(row.season ?? row.Season ?? SEASON_2024_25),
+      date: String(row.date).trim(),
+      homeTeam: String(row.home_team).trim(),
+      awayTeam: String(row.away_team).trim(),
+      homeScore: scores.homeScore,
+      awayScore: scores.awayScore,
+    };
+  }
 
   if (row.Home && row.Away && dateLeague) {
     const homeScore = parseScore(row["Home Goals"]);
