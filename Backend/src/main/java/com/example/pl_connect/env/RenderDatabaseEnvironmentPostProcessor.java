@@ -30,6 +30,10 @@ public class RenderDatabaseEnvironmentPostProcessor implements EnvironmentPostPr
         if (raw == null) {
             return;
         }
+        raw = raw.trim();
+        if (raw.startsWith("postgres://")) {
+            raw = "postgresql://" + raw.substring("postgres://".length());
+        }
 
         if (raw.startsWith("jdbc:postgresql:")) {
             return;
