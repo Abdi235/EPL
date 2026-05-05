@@ -16,11 +16,16 @@ const STADIUM_BACKGROUNDS = [
     '/stadiums/stadium-6.png',
     '/Background/download.jpg',
     '/Background/images.jpg',
+    '/Background/images (1).jpg',
     '/Background/download (1).jpg',
     '/Background/download (2).jpg',
     '/Background/download (3).jpg',
     '/Background/download (4).jpg',
     '/Background/download (5).jpg',
+    '/Background/download (6).jpg',
+    '/Background/download (7).jpg',
+    '/Background/download (8).jpg',
+    '/Background/st-james-park.jpg',
 ]
 
 const Layout = () => { 
