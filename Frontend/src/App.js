@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.scss';
 import { Route, Routes } from 'react-router-dom';
 import Layout from './components/Layout';
@@ -12,11 +12,32 @@ import LiveScores from "./components/LiveScores";
 import Results from "./components/Results";
 import Standings from "./components/Standings";
 import Stats from "./components/Stats";
+import SplashLoader from "./components/SplashLoader";
+
+const SPLASH_SESSION_KEY = "premierzone_splash_seen";
 
 function App() {
+  const [showSplash, setShowSplash] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.sessionStorage.getItem(SPLASH_SESSION_KEY) !== "1";
+  });
+
   useEffect(() => {
     document.title = 'EPL';
-  }, []);
+
+    if (!showSplash) return undefined;
+
+    const splashTimer = window.setTimeout(() => {
+      setShowSplash(false);
+      window.sessionStorage.setItem(SPLASH_SESSION_KEY, "1");
+    }, 1400);
+
+    return () => window.clearTimeout(splashTimer);
+  }, [showSplash]);
+
+  if (showSplash) {
+    return <SplashLoader />;
+  }
 
   return (
     <>
