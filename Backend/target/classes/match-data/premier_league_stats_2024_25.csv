@@ -1,0 +1,21 @@
+Rk,Squad,MP,W,D,L,GF,GA,GD,Pts,Pts/MP,xG,xGA,xGD,xGD/90,Attendance,Top Team Scorer,Goalkeeper,Notes
+1,Liverpool,38,25,9,4,86,41,45,84,2.21,82.2,38.6,43.6,1.15,60324,Mohamed Salah - 29,Alisson,→ Champions League via league finish
+2,Arsenal,38,20,14,4,69,34,35,74,1.95,59.9,34.4,25.5,0.67,60251,Kai Havertz - 9,David Raya,→ Champions League via league finish
+3,Manchester City,38,21,8,9,72,44,28,71,1.87,68.1,47.7,20.4,0.54,52756,Erling Haaland - 22,Ederson,→ Champions League via league finish
+4,Chelsea,38,20,9,9,64,43,21,69,1.82,67.8,47.3,20.5,0.54,39672,Cole Palmer - 15,Robert Sánchez,→ Champions League via league finish
+5,Newcastle Utd,38,20,6,12,68,47,21,66,1.74,63.8,45.5,18.3,0.48,52187,Alexander Isak - 23,Nick Pope,→ Europa League via league finish
+6,Aston Villa,38,19,9,10,58,51,7,66,1.74,56.1,50.1,5.9,0.16,42079,Ollie Watkins - 16,Emiliano Martínez,→ Conference League via league finish
+7,Nott'ham Forest,38,19,8,11,58,46,12,65,1.71,45.5,48.9,-3.4,-0.09,30059,Chris Wood - 20,Matz Sels,
+8,Brighton,38,16,13,9,66,59,7,61,1.61,58.7,54.6,4.1,0.11,31798,"Danny Welbeck, João Pedro... - 10",Bart Verbruggen,
+9,Bournemouth,38,15,11,12,58,46,12,56,1.47,64.0,48.5,15.5,0.41,11210,Justin Kluivert - 12,Kepa Arrizabalaga,
+10,Brentford,38,16,8,14,66,57,9,56,1.47,59.0,55.4,3.6,0.09,18742,Bryan Mbeumo - 20,Mark Flekken,
+11,Fulham,38,15,9,14,54,54,0,54,1.42,49.0,47.2,1.8,0.05,26826,Raúl Jiménez - 12,Bernd Leno,
+12,Crystal Palace,38,13,14,11,51,51,0,53,1.39,60.4,49.1,11.4,0.3,25064,Jean-Philippe Mateta - 14,Dean Henderson,→ Europa League via cup win
+13,Everton,38,11,15,12,42,44,-2,48,1.26,41.8,46.2,-4.5,-0.12,38439,Iliman Ndiaye - 9,Jordan Pickford,
+14,West Ham,38,11,10,17,46,62,-16,43,1.13,47.0,59.7,-12.7,-0.33,62463,Jarrod Bowen - 13,Alphonse Areola,
+15,Manchester Utd,38,11,9,18,44,54,-10,42,1.11,52.6,53.8,-1.3,-0.03,73747,"Bruno Fernandes, Amad Diallo - 8",André Onana,
+16,Wolves,38,12,6,20,54,69,-15,42,1.11,43.7,58.1,-14.5,-0.38,30695,Matheus Cunha - 15,José Sá,
+17,Tottenham,38,11,5,22,64,65,-1,38,1.0,58.8,63.3,-4.5,-0.12,61127,Brennan Johnson - 11,Guglielmo Vicario,
+18,Leicester City,38,6,7,25,33,80,-47,25,0.66,32.6,71.9,-39.3,-1.03,31448,Jamie Vardy - 9,Mads Hermansen,Relegated
+19,Ipswich Town,38,4,10,24,36,82,-46,22,0.58,34.4,72.7,-38.3,-1.01,29742,Liam Delap - 12,Arijanet Muric,Relegated
+20,Southampton,38,2,6,30,26,86,-60,12,0.32,32.7,84.8,-52.1,-1.37,30882,Paul Onuachu - 4,Aaron Ramsdale,Relegated
