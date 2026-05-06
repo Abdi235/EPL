@@ -9,22 +9,10 @@
  *
  * Or skip the proxy: set REACT_APP_API_BASE_URL at build time to the same HTTPS URL.
  */
-const ALLOWED_PATH =
-  /^v1\/player(\?.*)?$|^v1\/match-data\/(pl_matches_2024_25|football_data_E0_2526|premier_league_stats_2024_25)\.csv$/;
+const resolveBackendOrigin = require("./_resolveBackendOrigin");
 
-function resolveBackendOrigin() {
-  const candidates = [
-    process.env.RENDER_API_ORIGIN,
-    process.env.API_BACKEND_ORIGIN,
-    process.env.BACKEND_URL,
-    process.env.RENDER_URL,
-  ];
-  for (const c of candidates) {
-    const v = c?.trim().replace(/\/+$/, "");
-    if (v) return v;
-  }
-  return "";
-}
+const ALLOWED_PATH =
+  /^v1\/player(\?.*)?$|^v1\/news(\?.*)?$|^v1\/youtube\/highlight(\?.*)?$|^v1\/match-data\/(pl_matches_2024_25|football_data_E0_2526|premier_league_stats_2024_25)\.csv$/;
 
 module.exports = async (req, res) => {
   if (req.method === "OPTIONS") {

@@ -1,56 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import AnimatedLetters from "../AnimatedLetters";
-import { loadNormalizedMatches } from "../../utils/matchDatasets";
+import { loadNormalizedMatches, isMatchCompleted } from "../../utils/matchDatasets";
+import { getEplTeamLogoUrl } from "../../utils/eplTeamLogos";
 import "./index.scss";
 
 const seasonSortDesc = (a, b) => String(b).localeCompare(String(a));
-const normalizeText = (value) => String(value || "").trim().toLowerCase();
 const compareRows = (a, b) =>
   b.points - a.points ||
   b.goalDifference - a.goalDifference ||
   b.goalsFor - a.goalsFor ||
   a.team.name.localeCompare(b.team.name);
-const TEAM_LOGOS = {
-  arsenal: "https://media.api-sports.io/football/teams/42.png",
-  "aston villa": "https://media.api-sports.io/football/teams/66.png",
-  bournemouth: "https://media.api-sports.io/football/teams/35.png",
-  brentford: "https://media.api-sports.io/football/teams/55.png",
-  brighton: "https://media.api-sports.io/football/teams/51.png",
-  burnley: "https://media.api-sports.io/football/teams/44.png",
-  chelsea: "https://media.api-sports.io/football/teams/49.png",
-  "crystal palace": "https://media.api-sports.io/football/teams/52.png",
-  everton: "https://media.api-sports.io/football/teams/45.png",
-  fulham: "https://media.api-sports.io/football/teams/36.png",
-  ipswich: "https://media.api-sports.io/football/teams/57.png",
-  "ipswich town": "https://media.api-sports.io/football/teams/57.png",
-  leeds: "https://media.api-sports.io/football/teams/63.png",
-  "leeds united": "https://media.api-sports.io/football/teams/63.png",
-  leicester: "https://media.api-sports.io/football/teams/46.png",
-  "leicester city": "https://media.api-sports.io/football/teams/46.png",
-  liverpool: "https://media.api-sports.io/football/teams/40.png",
-  "manchester city": "https://media.api-sports.io/football/teams/50.png",
-  "man city": "https://media.api-sports.io/football/teams/50.png",
-  "manchester utd": "https://media.api-sports.io/football/teams/33.png",
-  "manchester united": "https://media.api-sports.io/football/teams/33.png",
-  "man utd": "https://media.api-sports.io/football/teams/33.png",
-  "newcastle utd": "https://media.api-sports.io/football/teams/34.png",
-  "newcastle united": "https://media.api-sports.io/football/teams/34.png",
-  norwich: "https://media.api-sports.io/football/teams/71.png",
-  "norwich city": "https://media.api-sports.io/football/teams/71.png",
-  "nott'ham forest": "https://media.api-sports.io/football/teams/65.png",
-  "nottingham forest": "https://media.api-sports.io/football/teams/65.png",
-  southampton: "https://media.api-sports.io/football/teams/41.png",
-  tottenham: "https://media.api-sports.io/football/teams/47.png",
-  "tottenham hotspur": "https://media.api-sports.io/football/teams/47.png",
-  watford: "https://media.api-sports.io/football/teams/38.png",
-  "west ham": "https://media.api-sports.io/football/teams/48.png",
-  "west ham united": "https://media.api-sports.io/football/teams/48.png",
-  wolves: "https://media.api-sports.io/football/teams/39.png",
-  "wolverhampton wanderers": "https://media.api-sports.io/football/teams/39.png",
-  "sheffield utd": "https://media.api-sports.io/football/teams/62.png",
-  "sheffield united": "https://media.api-sports.io/football/teams/62.png",
-  sunderland: "https://media.api-sports.io/football/teams/746.png",
-};
 const CHAMPIONS_LEAGUE_SPOTS = 4;
 const EUROPA_LEAGUE_SPOTS = 2;
 const CONFERENCE_LEAGUE_SPOTS = 1;
@@ -58,7 +17,7 @@ const CONFERENCE_LEAGUE_SPOTS = 1;
 const buildStandingsTable = (matches, season) => {
   const tableMap = new Map();
   matches
-    .filter((m) => m.season === season)
+    .filter((m) => m.season === season && isMatchCompleted(m))
     .forEach((match) => {
       const ensure = (name) => {
         if (!tableMap.has(name)) {
@@ -122,7 +81,7 @@ const getQualificationClass = (position) => {
   if (position <= CHAMPIONS_LEAGUE_SPOTS + EUROPA_LEAGUE_SPOTS + CONFERENCE_LEAGUE_SPOTS) return "qual-ecl";
   return "";
 };
-const getTeamLogo = (teamName) => TEAM_LOGOS[normalizeText(teamName)] || null;
+const getTeamLogo = (teamName) => getEplTeamLogoUrl(teamName);
 
 const Standings = () => {
   const [loading, setLoading] = useState(true);

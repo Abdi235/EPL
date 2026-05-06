@@ -1,20 +1,17 @@
 {
   "files": {
-    "main.css": "/static/css/main.2c5bcae8.css",
-    "main.js": "/static/js/main.929d22e7.js",
+    "main.css": "/static/css/main.c247997d.css",
+    "main.js": "/static/js/main.9d355bbf.js",
     "static/js/787.1b7283c0.chunk.js": "/static/js/787.1b7283c0.chunk.js",
-    "static/media/oldTraffordBackground.jpg": "/static/media/oldTraffordBackground.5e6a81366b8e9a5dbfa9.jpg",
     "static/media/RedHatDisplay-VariableFont_wght.ttf": "/static/media/RedHatDisplay-VariableFont_wght.efce1fc0edae25633558.ttf",
-    "static/media/PL.webp": "/static/media/PL.bd6dbd051a4638bc328e.webp",
     "static/media/EPLOGO.png": "/static/media/EPLOGO.47ca087c1d3127041fcc.png",
-    "static/media/sub-logo.png": "/static/media/sub-logo.faa74e49889b3b75d869.png",
     "index.html": "/index.html",
-    "main.2c5bcae8.css.map": "/static/css/main.2c5bcae8.css.map",
-    "main.929d22e7.js.map": "/static/js/main.929d22e7.js.map",
+    "main.c247997d.css.map": "/static/css/main.c247997d.css.map",
+    "main.9d355bbf.js.map": "/static/js/main.9d355bbf.js.map",
     "787.1b7283c0.chunk.js.map": "/static/js/787.1b7283c0.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.2c5bcae8.css",
-    "static/js/main.929d22e7.js"
+    "static/css/main.c247997d.css",
+    "static/js/main.9d355bbf.js"
   ]
 }

@@ -1,0 +1,10 @@
+com\example\pl_connect\youtube\YoutubeHighlightService.class
+com\example\pl_connect\youtube\YoutubeHighlightController.class
+com\example\pl_connect\config\HttpClientConfig.class
+com\example\pl_connect\matchdata\MatchDataController.class
+com\example\pl_connect\news\NewsArticle.class
+com\example\pl_connect\news\NewsResponse.class
+com\example\pl_connect\news\NewsController.class
+com\example\pl_connect\news\NewsService.class
+com\example\pl_connect\youtube\YoutubeHighlightResponse.class
+com\example\pl_connect\youtube\YoutubeHighlightService$CacheEntry.class

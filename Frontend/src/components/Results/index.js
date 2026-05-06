@@ -1,51 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import AnimatedLetters from "../AnimatedLetters";
-import { loadNormalizedMatches } from "../../utils/matchDatasets";
+import { loadNormalizedMatches, isMatchCompleted } from "../../utils/matchDatasets";
+import { getEplTeamLogoUrl } from "../../utils/eplTeamLogos";
 import "./index.scss";
 const normalizeText = (value) => String(value || "").trim().toLowerCase();
 const seasonSortDesc = (a, b) => String(b).localeCompare(String(a));
 const ALL_SEASONS_VALUE = "__all_seasons__";
-const TEAM_LOGOS = {
-  arsenal: "https://media.api-sports.io/football/teams/42.png",
-  "aston villa": "https://media.api-sports.io/football/teams/66.png",
-  bournemouth: "https://media.api-sports.io/football/teams/35.png",
-  brentford: "https://media.api-sports.io/football/teams/55.png",
-  brighton: "https://media.api-sports.io/football/teams/51.png",
-  burnley: "https://media.api-sports.io/football/teams/44.png",
-  chelsea: "https://media.api-sports.io/football/teams/49.png",
-  "crystal palace": "https://media.api-sports.io/football/teams/52.png",
-  everton: "https://media.api-sports.io/football/teams/45.png",
-  fulham: "https://media.api-sports.io/football/teams/36.png",
-  ipswich: "https://media.api-sports.io/football/teams/57.png",
-  "ipswich town": "https://media.api-sports.io/football/teams/57.png",
-  leeds: "https://media.api-sports.io/football/teams/63.png",
-  "leeds united": "https://media.api-sports.io/football/teams/63.png",
-  leicester: "https://media.api-sports.io/football/teams/46.png",
-  "leicester city": "https://media.api-sports.io/football/teams/46.png",
-  liverpool: "https://media.api-sports.io/football/teams/40.png",
-  "manchester city": "https://media.api-sports.io/football/teams/50.png",
-  "man city": "https://media.api-sports.io/football/teams/50.png",
-  "manchester utd": "https://media.api-sports.io/football/teams/33.png",
-  "manchester united": "https://media.api-sports.io/football/teams/33.png",
-  "man utd": "https://media.api-sports.io/football/teams/33.png",
-  "newcastle utd": "https://media.api-sports.io/football/teams/34.png",
-  "newcastle united": "https://media.api-sports.io/football/teams/34.png",
-  norwich: "https://media.api-sports.io/football/teams/71.png",
-  "norwich city": "https://media.api-sports.io/football/teams/71.png",
-  "nott'ham forest": "https://media.api-sports.io/football/teams/65.png",
-  "nottingham forest": "https://media.api-sports.io/football/teams/65.png",
-  southampton: "https://media.api-sports.io/football/teams/41.png",
-  tottenham: "https://media.api-sports.io/football/teams/47.png",
-  "tottenham hotspur": "https://media.api-sports.io/football/teams/47.png",
-  watford: "https://media.api-sports.io/football/teams/38.png",
-  "west ham": "https://media.api-sports.io/football/teams/48.png",
-  "west ham united": "https://media.api-sports.io/football/teams/48.png",
-  wolves: "https://media.api-sports.io/football/teams/39.png",
-  "wolverhampton wanderers": "https://media.api-sports.io/football/teams/39.png",
-  "sheffield utd": "https://media.api-sports.io/football/teams/62.png",
-  "sheffield united": "https://media.api-sports.io/football/teams/62.png",
-  sunderland: "https://media.api-sports.io/football/teams/746.png",
-};
 
 const createInitialRow = (team) => ({
   team,
@@ -69,6 +29,7 @@ const buildSeasonTables = (normalizedMatches) => {
   const seasonMap = new Map();
 
   normalizedMatches.forEach((match) => {
+    if (!isMatchCompleted(match)) return;
     const season = String(match.season || "").trim();
     if (!season) return;
 
@@ -123,7 +84,7 @@ const buildSeasonTables = (normalizedMatches) => {
     .sort((a, b) => seasonSortDesc(a.season, b.season));
 };
 
-const getTeamLogo = (teamName) => TEAM_LOGOS[normalizeText(teamName)] || null;
+const getTeamLogo = (teamName) => getEplTeamLogoUrl(teamName);
 
 const Results = () => {
   const [loading, setLoading] = useState(true);
@@ -222,6 +183,7 @@ const Results = () => {
     let draws = 0;
 
     filteredMatches.forEach((match) => {
+      if (!isMatchCompleted(match)) return;
       const isHomeTeam = normalizeText(match.homeTeam) === target || (!exactTeam && normalizeText(match.homeTeam).includes(target));
       const isAwayTeam = normalizeText(match.awayTeam) === target || (!exactTeam && normalizeText(match.awayTeam).includes(target));
       if (!isHomeTeam && !isAwayTeam) return;
@@ -320,7 +282,11 @@ const Results = () => {
 
         {filteredMatches.map((match, index) => (
           <div className="match-card" key={index}>
-            <p className="date">{match.date}</p>
+            <p className="date">
+              {match.date}
+              {match.kickoff ? ` · ${match.kickoff}` : ""}
+              {match.gameweek != null ? ` · GW ${match.gameweek}` : ""}
+            </p>
 
             <div className="teams">
               <span className="team-cell">
@@ -334,7 +300,7 @@ const Results = () => {
                 )}
                 <span>{match.homeTeam}</span>
               </span>
-              <span>{match.homeScore}</span>
+              <span>{isMatchCompleted(match) ? match.homeScore : "—"}</span>
             </div>
 
             <div className="teams">
@@ -349,7 +315,7 @@ const Results = () => {
                 )}
                 <span>{match.awayTeam}</span>
               </span>
-              <span>{match.awayScore}</span>
+              <span>{isMatchCompleted(match) ? match.awayScore : "—"}</span>
             </div>
           </div>
         ))}

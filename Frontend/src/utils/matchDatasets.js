@@ -44,6 +44,125 @@ export function parseScore(value) {
   return Number.isFinite(n) ? n : null;
 }
 
+/** Finished fixture with both scores present (excludes scheduled / TBD rows). */
+export function isMatchCompleted(m) {
+  return Boolean(
+    m &&
+      m.status !== "scheduled" &&
+      m.homeScore != null &&
+      m.awayScore != null &&
+      Number.isFinite(Number(m.homeScore)) &&
+      Number.isFinite(Number(m.awayScore))
+  );
+}
+
+/** Opening calendar year of a season label (e.g. 1992 from "1992/1993" or "92/93"). */
+function seasonOpeningYear(season) {
+  const s = String(season ?? "").trim();
+  if (!s) return null;
+  const m4 = s.match(/^(\d{4})(?=[/-]|$)/);
+  if (m4) return parseInt(m4[1], 10);
+  const m2 = s.match(/^(\d{2})[/-](\d{2})/);
+  if (m2) {
+    const y = parseInt(m2[1], 10);
+    return y >= 70 ? 1900 + y : 2000 + y;
+  }
+  return null;
+}
+
+/**
+ * EPL: 22 teams from 1992–93 through 1994–95 → 42 matches; 20 teams from 1995–96 → 38 matches.
+ */
+export function maxGameweekForSeason(season) {
+  const y = seasonOpeningYear(season);
+  if (y != null && y >= 1992 && y <= 1994) return 42;
+  return 38;
+}
+
+function parseGameweek(raw, maxAllowed) {
+  if (raw == null || raw === "") return null;
+  const cap = maxAllowed ?? 42;
+  const n = parseInt(String(raw).trim(), 10);
+  return Number.isFinite(n) && n >= 1 && n <= cap ? n : null;
+}
+
+function addTeamGameweek(teamGws, team, gw) {
+  if (!teamGws.has(team)) teamGws.set(team, new Set());
+  teamGws.get(team).add(gw);
+}
+
+function inferFinishedGameweeks(allSeasonMatches) {
+  const maxGw = maxGameweekForSeason(allSeasonMatches[0]?.season);
+  const teamGws = new Map();
+  for (const m of allSeasonMatches) {
+    if (!isMatchCompleted(m) || m.gameweek == null) continue;
+    addTeamGameweek(teamGws, m.homeTeam, m.gameweek);
+    addTeamGameweek(teamGws, m.awayTeam, m.gameweek);
+  }
+  const toInfer = allSeasonMatches
+    .filter((m) => isMatchCompleted(m) && m.gameweek == null)
+    .sort(
+      (a, b) =>
+        String(a.date).localeCompare(String(b.date)) ||
+        String(a.homeTeam).localeCompare(String(b.homeTeam))
+    );
+  for (const m of toInfer) {
+    let g = 1;
+    while (g <= maxGw) {
+      const hs = teamGws.get(m.homeTeam) || new Set();
+      const as = teamGws.get(m.awayTeam) || new Set();
+      if (!hs.has(g) && !as.has(g)) break;
+      g += 1;
+    }
+    const gw = Math.min(g, maxGw);
+    m.gameweek = gw;
+    addTeamGameweek(teamGws, m.homeTeam, gw);
+    addTeamGameweek(teamGws, m.awayTeam, gw);
+  }
+}
+
+function assignScheduledGameweeks(allSeasonMatches) {
+  const maxGw = maxGameweekForSeason(allSeasonMatches[0]?.season);
+  const teamGws = new Map();
+  for (const m of allSeasonMatches) {
+    if (m.gameweek == null) continue;
+    addTeamGameweek(teamGws, m.homeTeam, m.gameweek);
+    addTeamGameweek(teamGws, m.awayTeam, m.gameweek);
+  }
+  const scheduled = allSeasonMatches
+    .filter((m) => m.status === "scheduled" && m.gameweek == null)
+    .sort(
+      (a, b) =>
+        String(a.date).localeCompare(String(b.date)) ||
+        String(a.homeTeam).localeCompare(String(b.homeTeam))
+    );
+  for (const m of scheduled) {
+    let g = 1;
+    while (g <= maxGw) {
+      const hs = teamGws.get(m.homeTeam) || new Set();
+      const as = teamGws.get(m.awayTeam) || new Set();
+      if (!hs.has(g) && !as.has(g)) break;
+      g += 1;
+    }
+    const gw = Math.min(g, maxGw);
+    m.gameweek = gw;
+    addTeamGameweek(teamGws, m.homeTeam, gw);
+    addTeamGameweek(teamGws, m.awayTeam, gw);
+  }
+}
+
+export function applyGameweekInference(matches) {
+  const bySeason = new Map();
+  for (const m of matches) {
+    if (!bySeason.has(m.season)) bySeason.set(m.season, []);
+    bySeason.get(m.season).push(m);
+  }
+  for (const arr of bySeason.values()) {
+    inferFinishedGameweeks(arr);
+    assignScheduledGameweeks(arr);
+  }
+}
+
 /** Unify season labels so shorthand and hyphen forms match "YYYY/YYYY" in the UI. */
 export function normalizeSeason(raw) {
   const s = String(raw ?? "").trim();
@@ -52,6 +171,13 @@ export function normalizeSeason(raw) {
   }
   if (s === "2526" || s === "2025-26" || s === "2025-2026") {
     return "2025/2026";
+  }
+  const hy = s.match(/^(\d{4})-(\d{2})$/);
+  if (hy) {
+    const y1 = parseInt(hy[1], 10);
+    const y2short = parseInt(hy[2], 10);
+    const y2 = y2short < 70 ? 2000 + y2short : 1900 + y2short;
+    return `${y1}/${y2}`;
   }
   return s;
 }
@@ -108,21 +234,36 @@ export function normalizeMatchRow(row) {
   if (row.home_team && row.away_team && row.date) {
     const scores = parseScoreDashCell(row.score);
     if (!scores) return null;
+    const seasonNorm = normalizeSeason(row.season ?? row.Season ?? SEASON_2024_25);
     return {
-      season: normalizeSeason(row.season ?? row.Season ?? SEASON_2024_25),
+      season: seasonNorm,
       date: String(row.date).trim(),
       homeTeam: String(row.home_team).trim(),
       awayTeam: String(row.away_team).trim(),
       homeScore: scores.homeScore,
       awayScore: scores.awayScore,
+      gameweek: parseGameweek(row.gameweek, maxGameweekForSeason(seasonNorm)),
+      status: "finished",
+      kickoff: null,
     };
   }
 
-  if (row.HomeTeam && row.AwayTeam && dateLeague && row.FTHG !== undefined && row.FTAG !== undefined) {
+  if (row.HomeTeam && row.AwayTeam && dateLeague) {
     const homeScore = parseScore(row.FTHG);
     const awayScore = parseScore(row.FTAG);
-    if (homeScore === null || awayScore === null) {
-      return null;
+    const finished = homeScore !== null && awayScore !== null;
+    if (!finished) {
+      return {
+        season: SEASON_2025_26,
+        date: parseFootballDataUkDate(dateLeague),
+        homeTeam: mapFootballDataTeamName(row.HomeTeam),
+        awayTeam: mapFootballDataTeamName(row.AwayTeam),
+        homeScore: null,
+        awayScore: null,
+        gameweek: null,
+        status: "scheduled",
+        kickoff: row.Time != null ? String(row.Time).trim() : null,
+      };
     }
     return {
       season: SEASON_2025_26,
@@ -131,6 +272,9 @@ export function normalizeMatchRow(row) {
       awayTeam: mapFootballDataTeamName(row.AwayTeam),
       homeScore,
       awayScore,
+      gameweek: null,
+      status: "finished",
+      kickoff: row.Time != null ? String(row.Time).trim() : null,
     };
   }
 
@@ -140,13 +284,17 @@ export function normalizeMatchRow(row) {
     if (homeScore === null || awayScore === null) {
       return null;
     }
+    const seasonNorm = normalizeSeason(row.Season ?? row.season ?? "");
     return {
-      season: normalizeSeason(row.Season ?? row.season ?? ""),
+      season: seasonNorm,
       date: String(dateLeague).trim(),
       homeTeam: String(row.Home).trim(),
       awayTeam: String(row.Away).trim(),
       homeScore,
       awayScore,
+      gameweek: parseGameweek(row.GW ?? row.gameweek ?? row.Gameweek, maxGameweekForSeason(seasonNorm)),
+      status: "finished",
+      kickoff: null,
     };
   }
 
@@ -157,13 +305,17 @@ export function normalizeMatchRow(row) {
       return null;
     }
     const isHome = String(row.venue).trim().toLowerCase() === "home";
+    const seasonNorm = normalizeSeason(row.season ?? row.Season ?? "");
     return {
-      season: normalizeSeason(row.season ?? row.Season ?? ""),
+      season: seasonNorm,
       date: String(row.date).trim(),
       homeTeam: isHome ? String(row.team).trim() : String(row.opponent).trim(),
       awayTeam: isHome ? String(row.opponent).trim() : String(row.team).trim(),
       homeScore: isHome ? gf : ga,
       awayScore: isHome ? ga : gf,
+      gameweek: parseGameweek(row.GW ?? row.gameweek ?? row.Gameweek, maxGameweekForSeason(seasonNorm)),
+      status: "finished",
+      kickoff: null,
     };
   }
 
@@ -214,17 +366,19 @@ export async function loadNormalizedMatches() {
     }
   }
 
-  const seen = new Set();
-  const deduped = [];
+  const byKey = new Map();
   for (const m of merged) {
     const k = matchKey(m);
-    if (seen.has(k)) {
-      continue;
+    const prev = byKey.get(k);
+    if (!prev) {
+      byKey.set(k, m);
+    } else if ((prev.gameweek == null || prev.gameweek === "") && m.gameweek != null) {
+      byKey.set(k, m);
     }
-    seen.add(k);
-    deduped.push(m);
   }
 
+  const deduped = [...byKey.values()];
+  applyGameweekInference(deduped);
   deduped.sort(byDateDesc);
   return deduped;
 }
