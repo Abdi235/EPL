@@ -12,7 +12,7 @@
 const resolveBackendOrigin = require("./_resolveBackendOrigin");
 
 const ALLOWED_PATH =
-  /^v1\/player(\?.*)?$|^v1\/news(\?.*)?$|^v1\/youtube\/highlight(\?.*)?$|^v1\/match-data\/(pl_matches_2024_25|football_data_E0_2526|premier_league_stats_2024_25)\.csv$/;
+  /^v1\/player(\?.*)?$|^v1\/youtube\/highlight(\?.*)?$|^v1\/match-data\/(pl_matches_2024_25|football_data_E0_2526|premier_league_stats_2024_25)\.csv$/;
 
 module.exports = async (req, res) => {
   if (req.method === "OPTIONS") {

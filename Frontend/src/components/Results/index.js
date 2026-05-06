@@ -6,83 +6,7 @@ import "./index.scss";
 const normalizeText = (value) => String(value || "").trim().toLowerCase();
 const seasonSortDesc = (a, b) => String(b).localeCompare(String(a));
 const ALL_SEASONS_VALUE = "__all_seasons__";
-
-const createInitialRow = (team) => ({
-  team,
-  played: 0,
-  wins: 0,
-  draws: 0,
-  losses: 0,
-  gf: 0,
-  ga: 0,
-  gd: 0,
-  points: 0,
-});
-
-const compareTableRows = (a, b) =>
-  b.points - a.points ||
-  b.gd - a.gd ||
-  b.gf - a.gf ||
-  a.team.localeCompare(b.team);
-
-const buildSeasonTables = (normalizedMatches) => {
-  const seasonMap = new Map();
-
-  normalizedMatches.forEach((match) => {
-    if (!isMatchCompleted(match)) return;
-    const season = String(match.season || "").trim();
-    if (!season) return;
-
-    if (!seasonMap.has(season)) {
-      seasonMap.set(season, new Map());
-    }
-
-    const teamRows = seasonMap.get(season);
-    const homeName = match.homeTeam;
-    const awayName = match.awayTeam;
-    const homeGoals = Number(match.homeScore);
-    const awayGoals = Number(match.awayScore);
-
-    if (!teamRows.has(homeName)) teamRows.set(homeName, createInitialRow(homeName));
-    if (!teamRows.has(awayName)) teamRows.set(awayName, createInitialRow(awayName));
-
-    const home = teamRows.get(homeName);
-    const away = teamRows.get(awayName);
-
-    home.played += 1;
-    away.played += 1;
-    home.gf += homeGoals;
-    home.ga += awayGoals;
-    away.gf += awayGoals;
-    away.ga += homeGoals;
-
-    if (homeGoals > awayGoals) {
-      home.wins += 1;
-      home.points += 3;
-      away.losses += 1;
-    } else if (awayGoals > homeGoals) {
-      away.wins += 1;
-      away.points += 3;
-      home.losses += 1;
-    } else {
-      home.draws += 1;
-      away.draws += 1;
-      home.points += 1;
-      away.points += 1;
-    }
-  });
-
-  return [...seasonMap.entries()]
-    .map(([season, rows]) => {
-      const sorted = [...rows.values()].map((row) => ({
-        ...row,
-        gd: row.gf - row.ga,
-      })).sort(compareTableRows);
-
-      return { season, rows: sorted };
-    })
-    .sort((a, b) => seasonSortDesc(a.season, b.season));
-};
+const ALL_GAMEWEEKS_VALUE = "__all_gameweeks__";
 
 const getTeamLogo = (teamName) => getEplTeamLogoUrl(teamName);
 
@@ -94,7 +18,7 @@ const Results = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [teamQuery, setTeamQuery] = useState("");
   const [selectedSeason, setSelectedSeason] = useState("");
-  const [expandedSeasons, setExpandedSeasons] = useState({});
+  const [selectedGameweek, setSelectedGameweek] = useState(ALL_GAMEWEEKS_VALUE);
   const [letterClass] = useState("text-animate");
 
   const fetchResults = useCallback(async (isInitialLoad = false) => {
@@ -131,8 +55,6 @@ const Results = () => {
     return [...unique].sort(seasonSortDesc);
   }, [matches]);
 
-  const seasonTables = useMemo(() => buildSeasonTables(matches), [matches]);
-
   useEffect(() => {
     if (!selectedSeason && seasons.length > 0) {
       setSelectedSeason(seasons[0]);
@@ -140,11 +62,7 @@ const Results = () => {
   }, [selectedSeason, seasons]);
 
   useEffect(() => {
-    if (!selectedSeason) return;
-    setExpandedSeasons((prev) => {
-      if (Object.prototype.hasOwnProperty.call(prev, selectedSeason)) return prev;
-      return { ...prev, [selectedSeason]: true };
-    });
+    setSelectedGameweek(ALL_GAMEWEEKS_VALUE);
   }, [selectedSeason]);
 
   const allTeams = useMemo(() => {
@@ -156,19 +74,36 @@ const Results = () => {
     return [...names].sort((a, b) => a.localeCompare(b));
   }, [matches]);
 
+  const availableGameweeks = useMemo(() => {
+    if (!selectedSeason || selectedSeason === ALL_SEASONS_VALUE) return [];
+    const set = new Set(
+      matches
+        .filter((m) => String(m.season || "").trim() === selectedSeason && m.gameweek != null)
+        .map((m) => Number(m.gameweek))
+        .filter((n) => Number.isFinite(n))
+    );
+    return [...set].sort((a, b) => b - a);
+  }, [matches, selectedSeason]);
+
   const filteredMatches = useMemo(() => {
     const query = normalizeText(teamQuery);
     const season = normalizeText(selectedSeason);
     const useAllSeasons = selectedSeason === ALL_SEASONS_VALUE;
+    const selectedGw = Number(selectedGameweek);
+    const useAllGameweeks =
+      selectedGameweek === ALL_GAMEWEEKS_VALUE || selectedSeason === ALL_SEASONS_VALUE;
 
     return matches.filter((match) => {
       if (!useAllSeasons && season && normalizeText(match.season) !== season) return false;
+      if (!useAllGameweeks) {
+        if (match.gameweek == null || Number(match.gameweek) !== selectedGw) return false;
+      }
       if (!query) return true;
       const home = normalizeText(match.homeTeam);
       const away = normalizeText(match.awayTeam);
       return home.includes(query) || away.includes(query);
     });
-  }, [matches, selectedSeason, teamQuery]);
+  }, [matches, selectedSeason, selectedGameweek, teamQuery]);
 
   const teamStats = useMemo(() => {
     const query = normalizeText(teamQuery);
@@ -201,15 +136,6 @@ const Results = () => {
     return { teamName, wins, losses, draws };
   }, [allTeams, filteredMatches, teamQuery]);
 
-  const visibleSeasonTables = useMemo(() => {
-    if (!selectedSeason || selectedSeason === ALL_SEASONS_VALUE) return seasonTables;
-    return seasonTables.filter((table) => table.season === selectedSeason);
-  }, [seasonTables, selectedSeason]);
-
-  const toggleSeasonTable = (season) => {
-    setExpandedSeasons((prev) => ({ ...prev, [season]: !prev[season] }));
-  };
-
   if (loading) return <p>Loading results...</p>;
   if (error) return <p>Error loading results: {error.message}</p>;
 
@@ -220,12 +146,12 @@ const Results = () => {
         <h1 className="page-title">
           <AnimatedLetters
             letterClass={letterClass}
-            strArray={"Recent Results".split("")}
+            strArray={"Results".split("")}
             idx={12}
           />
         </h1>
         <p className="browse-page__intro">
-          Scan recent scorelines, filter by club or season, and expand full mini-tables when you need detail.
+          Filter by season, gameweek, and team to inspect specific results quickly.
         </p>
 
         <p className="status">
@@ -242,31 +168,44 @@ const Results = () => {
         </button>
 
         <div className="results-controls">
-        <select
-          className="team-search-input"
-          value={selectedSeason}
-          onChange={(event) => setSelectedSeason(event.target.value)}
-        >
-          <option value={ALL_SEASONS_VALUE}>All seasons</option>
-          {seasons.map((season) => (
-            <option key={season} value={season}>
-              {season}
-            </option>
-          ))}
-        </select>
-        <input
-          className="team-search-input"
-          type="text"
-          placeholder="Search by team (e.g. Arsenal)"
-          value={teamQuery}
-          list="results-team-list"
-          onChange={(event) => setTeamQuery(event.target.value)}
-        />
-        <datalist id="results-team-list">
-          {allTeams.map((team) => (
-            <option key={team} value={team} />
-          ))}
-        </datalist>
+          <select
+            className="team-search-input"
+            value={selectedSeason}
+            onChange={(event) => setSelectedSeason(event.target.value)}
+          >
+            <option value={ALL_SEASONS_VALUE}>All seasons</option>
+            {seasons.map((season) => (
+              <option key={season} value={season}>
+                {season}
+              </option>
+            ))}
+          </select>
+          <select
+            className="team-search-input"
+            value={selectedGameweek}
+            onChange={(event) => setSelectedGameweek(event.target.value)}
+            disabled={selectedSeason === ALL_SEASONS_VALUE}
+          >
+            <option value={ALL_GAMEWEEKS_VALUE}>All gameweeks</option>
+            {availableGameweeks.map((gw) => (
+              <option key={gw} value={String(gw)}>
+                Gameweek {gw}
+              </option>
+            ))}
+          </select>
+          <input
+            className="team-search-input"
+            type="text"
+            placeholder="Search by team (e.g. Arsenal)"
+            value={teamQuery}
+            list="results-team-list"
+            onChange={(event) => setTeamQuery(event.target.value)}
+          />
+          <datalist id="results-team-list">
+            {allTeams.map((team) => (
+              <option key={team} value={team} />
+            ))}
+          </datalist>
         </div>
 
         {teamStats && (
@@ -321,57 +260,6 @@ const Results = () => {
         ))}
         </div>
 
-        <div className="season-tables">
-          <h2>Season Tables</h2>
-        {visibleSeasonTables.map((seasonTable) => (
-          <div key={seasonTable.season} className="season-table-card">
-            <button
-              type="button"
-              className="season-table-toggle"
-              onClick={() => toggleSeasonTable(seasonTable.season)}
-            >
-              <span>{seasonTable.season}</span>
-              <span>{expandedSeasons[seasonTable.season] ? "Hide" : "Show"}</span>
-            </button>
-            {expandedSeasons[seasonTable.season] && (
-              <div className="season-table-scroll">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>#</th>
-                      <th>Team</th>
-                      <th>P</th>
-                      <th>W</th>
-                      <th>D</th>
-                      <th>L</th>
-                      <th>GF</th>
-                      <th>GA</th>
-                      <th>GD</th>
-                      <th>Pts</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {seasonTable.rows.map((row, index) => (
-                      <tr key={`${seasonTable.season}-${row.team}`}>
-                        <td>{index + 1}</td>
-                        <td>{row.team}</td>
-                        <td>{row.played}</td>
-                        <td>{row.wins}</td>
-                        <td>{row.draws}</td>
-                        <td>{row.losses}</td>
-                        <td>{row.gf}</td>
-                        <td>{row.ga}</td>
-                        <td>{row.gd}</td>
-                        <td>{row.points}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        ))}
-        </div>
       </div>
     </div>
   );

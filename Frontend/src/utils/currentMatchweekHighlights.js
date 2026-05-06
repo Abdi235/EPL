@@ -2,8 +2,8 @@ import { buildFuboChannelSearchUrl } from "../config/fuboYoutube";
 import { isMatchCompleted } from "./matchDatasets";
 
 /**
- * Pick recent fixtures from the same calendar week as the latest result in the current season,
- * for a "this matchweek" style strip on the home page. Highlight URLs resolve via the backend when configured.
+ * Pick fixtures from the current gameweek (by `match.gameweek`) for the latest season,
+ * for a "this gameweek" strip on the home page. Highlight URLs resolve via the backend when configured.
  */
 
 /** @param {string} ymd */
@@ -45,9 +45,7 @@ export function selectCurrentMatchweekHighlights(matches, options = {}) {
   const maxItems = options.maxItems ?? 6;
   const todayIso = formatLocalIsoDate(now);
 
-  const played = (matches || []).filter(
-    (m) => isMatchCompleted(m) && String(m.date) <= todayIso
-  );
+  const played = (matches || []).filter((m) => isMatchCompleted(m) && String(m.date) <= todayIso);
   if (!played.length) {
     return {
       season: null,
@@ -65,31 +63,32 @@ export function selectCurrentMatchweekHighlights(matches, options = {}) {
   }
 
   const anchorDate = inSeason[0].date;
-  const anchor = parseYmdLocal(anchorDate);
-  if (!anchor) {
-    return { season: latestSeason, matches: [], weekRangeLabel: "", anchorDate };
+  const currentGw = Math.max(
+    ...inSeason.map((m) => (m.gameweek != null ? Number(m.gameweek) : -1)).filter((n) => Number.isFinite(n))
+  );
+
+  let gwMatches = inSeason.filter((m) => m.gameweek != null && Number(m.gameweek) === currentGw);
+  if (!gwMatches.length) {
+    // Fallback to the previous behavior if gameweek isn't populated for this season.
+    const anchor = parseYmdLocal(anchorDate);
+    if (!anchor) {
+      return { season: latestSeason, matches: [], weekRangeLabel: "", anchorDate };
+    }
+    const targetWeek = mondayKeyLocal(anchor);
+    gwMatches = inSeason.filter((m) => {
+      const dt = parseYmdLocal(m.date);
+      return dt && mondayKeyLocal(dt) === targetWeek;
+    });
   }
 
-  const targetWeek = mondayKeyLocal(anchor);
-  let weekMatches = inSeason.filter((m) => {
-    const dt = parseYmdLocal(m.date);
-    return dt && mondayKeyLocal(dt) === targetWeek;
-  });
-
-  if (!weekMatches.length) {
-    weekMatches = inSeason.slice(0, maxItems);
+  if (!gwMatches.length) {
+    gwMatches = inSeason.slice(0, maxItems);
   }
 
-  weekMatches.sort(byDateDescThenTeams);
-  const capped = weekMatches.slice(0, maxItems);
+  gwMatches.sort(byDateDescThenTeams);
+  const capped = gwMatches.slice(0, maxItems);
 
-  const first = parseYmdLocal(capped[capped.length - 1]?.date);
-  const last = parseYmdLocal(capped[0]?.date);
-  let weekRangeLabel = "";
-  if (first && last) {
-    const opts = { month: "short", day: "numeric" };
-    weekRangeLabel = `${first.toLocaleDateString(undefined, opts)} – ${last.toLocaleDateString(undefined, opts)}`;
-  }
+  const weekRangeLabel = Number.isFinite(currentGw) && currentGw >= 1 ? `Gameweek ${currentGw}` : "";
 
   return {
     season: latestSeason,

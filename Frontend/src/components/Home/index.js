@@ -51,7 +51,7 @@ const Home = () => {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+    const loadHighlights = async () => {
       try {
         const all = await loadNormalizedMatches();
         if (cancelled) return;
@@ -69,9 +69,14 @@ const Home = () => {
           setHighlightsState((s) => ({ ...s, status: 'error', matches: [] }));
         }
       }
-    })();
+    };
+
+    loadHighlights();
+    const intervalId = window.setInterval(loadHighlights, 120000);
+
     return () => {
       cancelled = true;
+      window.clearInterval(intervalId);
     };
   }, []);
 
@@ -127,8 +132,8 @@ const Home = () => {
             Built for fast navigation and matchday clarity.
           </p>
           <div className="cta-row">
-            <Link to="/standings" className="flat-button">View Standings</Link>
-            <Link to="/results" className="secondary-button">Browse Results</Link>
+            <Link to="/standings" className="flat-button">Table</Link>
+            <Link to="/results" className="secondary-button">Results</Link>
           </div>
         </section>
 
@@ -136,20 +141,20 @@ const Home = () => {
           <p className="panel-label">Quick Access</p>
           <div className="feature-list">
             <Link to="/standings" className="feature-card">
-              <h3>Standings</h3>
-              <p>Track the current table with season filters and qualification highlights.</p>
+              <h3>Table</h3>
+              <p>Dedicated standings tab by season.</p>
             </Link>
             <Link to="/results" className="feature-card">
               <h3>Results</h3>
-              <p>Review fixtures by season and team with clear, logo-enhanced match cards.</p>
+              <p>Filter by season, gameweek, and team.</p>
+            </Link>
+            <Link to="/gameweeks" className="feature-card">
+              <h3>Gameweeks</h3>
+              <p>Round-by-round fixtures with table positions and form.</p>
             </Link>
             <Link to="/teams" className="feature-card">
               <h3>Teams</h3>
               <p>Explore club-level views and player-focused data in one place.</p>
-            </Link>
-            <Link to="/news" className="feature-card">
-              <h3>News</h3>
-              <p>Premier League headlines from BBC Sport and The Guardian.</p>
             </Link>
           </div>
         </aside>
@@ -161,7 +166,7 @@ const Home = () => {
             <div>
               <p className="eyebrow">Matchweek</p>
               <h2 id="home-highlights-heading" className="home-highlights__title">
-                Recent fixtures & highlights
+                Current gameweek results & highlights
               </h2>
               {season && weekRangeLabel && (
                 <p className="home-highlights__sub">

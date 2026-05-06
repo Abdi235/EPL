@@ -81,6 +81,26 @@
     overflow-x: auto;
   }
 
+  .season-table-block {
+    margin: 1.25rem 0 1.75rem;
+    padding: 0.9rem;
+    border-radius: 10px;
+    background: rgba(15, 23, 42, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .season-table-block__title {
+    margin: 0;
+    color: #f9fafb;
+    font-size: 1.1rem;
+  }
+
+  .season-table-block__sub {
+    margin: 0.25rem 0 0.75rem;
+    color: rgba(203, 213, 225, 0.85);
+    font-size: 0.85rem;
+  }
+
   table {
     width: 100%;
     border-collapse: collapse;
@@ -98,5 +118,64 @@
   th:nth-child(2),
   td:nth-child(2) {
     text-align: left;
+  }
+
+  .club-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .club-logo {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.85);
+    padding: 2px;
+  }
+
+  tbody tr.qual-cl td:first-child {
+    border-left: 6px solid #2563eb;
+    font-weight: 700;
+  }
+
+  tbody tr.qual-el td:first-child {
+    border-left: 6px solid #f97316;
+    font-weight: 700;
+  }
+
+  tbody tr.qual-ecl td:first-child {
+    border-left: 6px solid #22c55e;
+    font-weight: 700;
+  }
+
+  .qualification-legend {
+    margin-top: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .legend-item {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .legend-item.cl {
+    background: #2563eb;
+  }
+
+  .legend-item.el {
+    background: #f97316;
+  }
+
+  .legend-item.ecl {
+    background: #22c55e;
   }
 }

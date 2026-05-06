@@ -1,7 +1,7 @@
 import './index.scss'
 import { Link, NavLink } from "react-router-dom"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faHome, faSearch, faTshirt, faBars, faClose, faUsers, faFlag, faBolt, faTable, faList, faChartBar, faNewspaper, faCalendarDays } from '@fortawesome/free-solid-svg-icons'
+import { faHome, faSearch, faTshirt, faBars, faClose, faUsers, faFlag, faBolt, faList, faTable, faChartBar } from '@fortawesome/free-solid-svg-icons'
 import epLogo from '../../assets/images/EPLOGO.png'
 import { useEffect, useState } from 'react'
 
@@ -108,17 +108,11 @@ const Sidebar = () => {
                 <NavLink className={navLinkClass('results-link')} to="/results" aria-label="Results" onClick={handleTopicClick}>
                     <FontAwesomeIcon icon={faList} />
                 </NavLink>
-                <NavLink className={navLinkClass('gameweeks-link')} to="/gameweeks" aria-label="Gameweeks" onClick={handleTopicClick}>
-                    <FontAwesomeIcon icon={faCalendarDays} />
-                </NavLink>
                 <NavLink className={navLinkClass('standings-link')} to="/standings" aria-label="Table" onClick={handleTopicClick}>
                     <FontAwesomeIcon icon={faTable} />
                 </NavLink>
                 <NavLink className={navLinkClass('stats-link')} to="/stats" aria-label="Stats" onClick={handleTopicClick}>
                     <FontAwesomeIcon icon={faChartBar} />
-                </NavLink>
-                <NavLink className={navLinkClass('news-link')} to="/news" aria-label="News" onClick={handleTopicClick}>
-                    <FontAwesomeIcon icon={faNewspaper} />
                 </NavLink>
             </nav>
             <button

@@ -13,7 +13,6 @@ import Results from "./components/Results";
 import Gameweeks from "./components/Gameweeks";
 import Standings from "./components/Standings";
 import Stats from "./components/Stats";
-import News from "./components/News";
 import SplashLoader from "./components/SplashLoader";
 
 const SPLASH_SESSION_KEY = "premierzone_splash_seen";
@@ -56,7 +55,6 @@ function App() {
           <Route path="gameweeks" element={<Gameweeks />} />
           <Route path="standings" element={<Standings />} />
           <Route path="stats" element={<Stats />} />
-          <Route path="news" element={<News />} />
         </Route>
       </Routes>
     </>

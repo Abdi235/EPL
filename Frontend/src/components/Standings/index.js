@@ -10,6 +10,7 @@ const compareRows = (a, b) =>
   b.goalDifference - a.goalDifference ||
   b.goalsFor - a.goalsFor ||
   a.team.name.localeCompare(b.team.name);
+
 const CHAMPIONS_LEAGUE_SPOTS = 4;
 const EUROPA_LEAGUE_SPOTS = 2;
 const CONFERENCE_LEAGUE_SPOTS = 1;
@@ -64,15 +65,13 @@ const buildStandingsTable = (matches, season) => {
       }
     });
 
-  const rows = [...tableMap.values()]
+  return [...tableMap.values()]
     .map((row) => ({
       ...row,
       goalDifference: row.goalsFor - row.goalsAgainst,
     }))
     .sort(compareRows)
     .map((row, index) => ({ ...row, position: index + 1 }));
-
-  return rows;
 };
 
 const getQualificationClass = (position) => {
@@ -81,6 +80,7 @@ const getQualificationClass = (position) => {
   if (position <= CHAMPIONS_LEAGUE_SPOTS + EUROPA_LEAGUE_SPOTS + CONFERENCE_LEAGUE_SPOTS) return "qual-ecl";
   return "";
 };
+
 const getTeamLogo = (teamName) => getEplTeamLogoUrl(teamName);
 
 const Standings = () => {
@@ -95,21 +95,15 @@ const Standings = () => {
 
   const fetchStandings = useCallback(async (isInitialLoad = false) => {
     try {
-      if (!isInitialLoad) {
-        setIsRefreshing(true);
-      }
-
+      if (!isInitialLoad) setIsRefreshing(true);
       const normalized = await loadNormalizedMatches();
-
       setAllMatches(normalized);
       setLastUpdated(new Date());
       setError(null);
     } catch (err) {
       setError(err);
     } finally {
-      if (isInitialLoad) {
-        setLoading(false);
-      }
+      if (isInitialLoad) setLoading(false);
       setIsRefreshing(false);
     }
   }, []);
@@ -144,9 +138,7 @@ const Standings = () => {
         <h1 className="page-title">
           <AnimatedLetters letterClass={letterClass} strArray={"Standings".split("")} idx={12} />
         </h1>
-        <p className="browse-page__intro">
-          Full table from your results dataset with European qualification stripes and season switching.
-        </p>
+        <p className="browse-page__intro">Separate table view by season.</p>
         <p className="status">Last updated: {lastUpdated ? lastUpdated.toLocaleTimeString() : "N/A"}</p>
         <button className="refresh-button" onClick={() => fetchStandings(false)} disabled={isRefreshing}>
           {isRefreshing ? "Refreshing..." : "Refresh now"}
@@ -166,48 +158,48 @@ const Standings = () => {
         </div>
         <div className="standings-table-wrapper">
           <table className="standings-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Club</th>
-              <th>P</th>
-              <th>W</th>
-              <th>D</th>
-              <th>L</th>
-              <th>GF</th>
-              <th>GA</th>
-              <th>GD</th>
-              <th>Pts</th>
-            </tr>
-          </thead>
-          <tbody>
-            {table.map((row) => (
-              <tr key={row.team.id} className={getQualificationClass(row.position)}>
-                <td>{row.position}</td>
-                <td>
-                  <span className="club-cell">
-                    {getTeamLogo(row.team.name) && (
-                      <img
-                        src={getTeamLogo(row.team.name)}
-                        alt={`${row.team.name} logo`}
-                        className="club-logo"
-                        loading="lazy"
-                      />
-                    )}
-                    <span>{row.team.name}</span>
-                  </span>
-                </td>
-                <td>{row.playedGames}</td>
-                <td>{row.won}</td>
-                <td>{row.draw}</td>
-                <td>{row.lost}</td>
-                <td>{row.goalsFor}</td>
-                <td>{row.goalsAgainst}</td>
-                <td>{row.goalDifference}</td>
-                <td>{row.points}</td>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Club</th>
+                <th>P</th>
+                <th>W</th>
+                <th>D</th>
+                <th>L</th>
+                <th>GF</th>
+                <th>GA</th>
+                <th>GD</th>
+                <th>Pts</th>
               </tr>
-            ))}
-          </tbody>
+            </thead>
+            <tbody>
+              {table.map((row) => (
+                <tr key={row.team.id} className={getQualificationClass(row.position)}>
+                  <td>{row.position}</td>
+                  <td>
+                    <span className="club-cell">
+                      {getTeamLogo(row.team.name) && (
+                        <img
+                          src={getTeamLogo(row.team.name)}
+                          alt={`${row.team.name} logo`}
+                          className="club-logo"
+                          loading="lazy"
+                        />
+                      )}
+                      <span>{row.team.name}</span>
+                    </span>
+                  </td>
+                  <td>{row.playedGames}</td>
+                  <td>{row.won}</td>
+                  <td>{row.draw}</td>
+                  <td>{row.lost}</td>
+                  <td>{row.goalsFor}</td>
+                  <td>{row.goalsAgainst}</td>
+                  <td>{row.goalDifference}</td>
+                  <td>{row.points}</td>
+                </tr>
+              ))}
+            </tbody>
           </table>
         </div>
         <div className="qualification-legend">
