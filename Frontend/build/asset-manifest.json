@@ -1,17 +1,17 @@
 {
   "files": {
-    "main.css": "/static/css/main.a2d1a855.css",
-    "main.js": "/static/js/main.6760b69f.js",
+    "main.css": "/static/css/main.e4c38aa2.css",
+    "main.js": "/static/js/main.5e123033.js",
     "static/js/787.1b7283c0.chunk.js": "/static/js/787.1b7283c0.chunk.js",
     "static/media/RedHatDisplay-VariableFont_wght.ttf": "/static/media/RedHatDisplay-VariableFont_wght.efce1fc0edae25633558.ttf",
     "static/media/EPLOGO.png": "/static/media/EPLOGO.47ca087c1d3127041fcc.png",
     "index.html": "/index.html",
-    "main.a2d1a855.css.map": "/static/css/main.a2d1a855.css.map",
-    "main.6760b69f.js.map": "/static/js/main.6760b69f.js.map",
+    "main.e4c38aa2.css.map": "/static/css/main.e4c38aa2.css.map",
+    "main.5e123033.js.map": "/static/js/main.5e123033.js.map",
     "787.1b7283c0.chunk.js.map": "/static/js/787.1b7283c0.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.a2d1a855.css",
-    "static/js/main.6760b69f.js"
+    "static/css/main.e4c38aa2.css",
+    "static/js/main.5e123033.js"
   ]
 }

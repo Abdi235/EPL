@@ -33,8 +33,9 @@
 | **Player data** | Sortable-style table: name, position, age, appearances, minutes, goals, assists, discipline, expected metrics (when present in source CSV), and club. Season selector aligns each dataset to a competition year. |
 | **Nation & position** | Filter players by nationality or playing position. |
 | **Search** | Quick lookup by player name. |
-| **Results** | Recent and historical results with season filtering. |
-| **Standings** | League tables derived from match data. |
+| **Results** | Dedicated results tab with season + gameweek + team filters. |
+| **Standings** | Separate league table tab with season-aware European qualification bands. |
+| **Major English Cups** | FA Cup, EFL Cup, and Community Shield finals with recent past winners. |
 | **Live scores** | Live match feed with periodic refresh. |
 | **Stats** | Placeholder for future league-wide statistical highlights. |
 
@@ -129,6 +130,8 @@ Set variables in a `.env` file inside `Frontend/` for local development (Create 
 - **Player seasons** are driven by entries in `Frontend/src/utils/playerDataset.js` and matching CSV files under `Frontend/public/`. Adding a new season means supplying a compatible CSV and registering it in the configuration.
 - **Column completeness** (for example age or expected goals) depends on what each CSV export contains; the UI shows the same columns every season, with an em dash when a value is not in the file.
 - **Match and standings data** are loaded from configured CSV sources and API routes as implemented in the front-end utilities and backend controllers.
+- **Home highlights** refresh periodically and surface current-gameweek results with highlight links.
+- **Cup results** in the new Cups view are curated records for major domestic competitions.
 
 ---
 

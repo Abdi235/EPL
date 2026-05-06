@@ -1,7 +1,7 @@
 import './index.scss'
 import { Link, NavLink } from "react-router-dom"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faHome, faSearch, faTshirt, faBars, faClose, faUsers, faFlag, faBolt, faList, faTable, faChartBar } from '@fortawesome/free-solid-svg-icons'
+import { faHome, faSearch, faTshirt, faBars, faClose, faUsers, faFlag, faBolt, faList, faTable, faChartBar, faTrophy } from '@fortawesome/free-solid-svg-icons'
 import epLogo from '../../assets/images/EPLOGO.png'
 import { useEffect, useState } from 'react'
 
@@ -110,6 +110,9 @@ const Sidebar = () => {
                 </NavLink>
                 <NavLink className={navLinkClass('standings-link')} to="/standings" aria-label="Table" onClick={handleTopicClick}>
                     <FontAwesomeIcon icon={faTable} />
+                </NavLink>
+                <NavLink className={navLinkClass('cups-link')} to="/cups" aria-label="Cups" onClick={handleTopicClick}>
+                    <FontAwesomeIcon icon={faTrophy} />
                 </NavLink>
                 <NavLink className={navLinkClass('stats-link')} to="/stats" aria-label="Stats" onClick={handleTopicClick}>
                     <FontAwesomeIcon icon={faChartBar} />

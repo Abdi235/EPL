@@ -1,0 +1,69 @@
+@import "../../styles/browsePageGlass.scss";
+
+.cups-page {
+  .cups-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin: 1rem 0 1.15rem;
+  }
+
+  .cups-tab {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(17, 24, 39, 0.85);
+    color: #dbeafe;
+    border-radius: 8px;
+    padding: 0.5rem 0.7rem;
+    font-size: 0.84rem;
+    cursor: pointer;
+  }
+
+  .cups-tab.is-active {
+    border-color: #facc15;
+    color: #facc15;
+    background: rgba(250, 204, 21, 0.08);
+  }
+
+  .cups-card {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(15, 23, 42, 0.45);
+    border-radius: 10px;
+    padding: 0.9rem;
+  }
+
+  .cups-card__title {
+    margin: 0;
+    color: #f8fafc;
+    font-size: 1.05rem;
+  }
+
+  .cups-card__subtitle {
+    margin: 0.4rem 0 0.85rem;
+    color: #cbd5e1;
+    font-size: 0.84rem;
+  }
+
+  .cups-table-wrap {
+    overflow-x: auto;
+  }
+
+  .cups-table {
+    width: 100%;
+    min-width: 560px;
+    border-collapse: collapse;
+  }
+
+  .cups-table th,
+  .cups-table td {
+    padding: 0.5rem 0.55rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    text-align: left;
+    color: #f8fafc;
+    font-size: 0.84rem;
+  }
+
+  .cups-table th {
+    color: #facc15;
+    font-weight: 700;
+  }
+}

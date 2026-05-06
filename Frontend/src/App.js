@@ -12,6 +12,7 @@ import LiveScores from "./components/LiveScores";
 import Results from "./components/Results";
 import Gameweeks from "./components/Gameweeks";
 import Standings from "./components/Standings";
+import Cups from "./components/Cups";
 import Stats from "./components/Stats";
 import SplashLoader from "./components/SplashLoader";
 
@@ -54,6 +55,7 @@ function App() {
           <Route path="results" element={<Results />} />
           <Route path="gameweeks" element={<Gameweeks />} />
           <Route path="standings" element={<Standings />} />
+          <Route path="cups" element={<Cups />} />
           <Route path="stats" element={<Stats />} />
         </Route>
       </Routes>
