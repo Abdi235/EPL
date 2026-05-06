@@ -11,9 +11,25 @@ const compareRows = (a, b) =>
   b.goalsFor - a.goalsFor ||
   a.team.name.localeCompare(b.team.name);
 
-const CHAMPIONS_LEAGUE_SPOTS = 4;
-const EUROPA_LEAGUE_SPOTS = 2;
-const CONFERENCE_LEAGUE_SPOTS = 1;
+const BASE_EUROPA_LEAGUE_SPOTS = 1;
+const BASE_CONFERENCE_LEAGUE_SPOTS = 1;
+
+function openingYearFromSeasonLabel(season) {
+  const s = String(season || "").trim();
+  const m = s.match(/^(\d{4})/);
+  if (!m) return null;
+  return Number(m[1]);
+}
+
+function qualificationProfileForSeason(season) {
+  const openingYear = openingYearFromSeasonLabel(season);
+  const championsLeagueSpots = openingYear != null && openingYear >= 2024 ? 5 : 4;
+  return {
+    championsLeagueSpots,
+    europaLeagueSpots: BASE_EUROPA_LEAGUE_SPOTS,
+    conferenceLeagueSpots: BASE_CONFERENCE_LEAGUE_SPOTS,
+  };
+}
 
 const buildStandingsTable = (matches, season) => {
   const tableMap = new Map();
@@ -74,10 +90,13 @@ const buildStandingsTable = (matches, season) => {
     .map((row, index) => ({ ...row, position: index + 1 }));
 };
 
-const getQualificationClass = (position) => {
-  if (position <= CHAMPIONS_LEAGUE_SPOTS) return "qual-cl";
-  if (position <= CHAMPIONS_LEAGUE_SPOTS + EUROPA_LEAGUE_SPOTS) return "qual-el";
-  if (position <= CHAMPIONS_LEAGUE_SPOTS + EUROPA_LEAGUE_SPOTS + CONFERENCE_LEAGUE_SPOTS) return "qual-ecl";
+const getQualificationClass = (position, profile) => {
+  const cl = profile?.championsLeagueSpots ?? 4;
+  const el = profile?.europaLeagueSpots ?? 1;
+  const ecl = profile?.conferenceLeagueSpots ?? 1;
+  if (position <= cl) return "qual-cl";
+  if (position <= cl + el) return "qual-el";
+  if (position <= cl + el + ecl) return "qual-ecl";
   return "";
 };
 
@@ -128,6 +147,11 @@ const Standings = () => {
     setTable(buildStandingsTable(allMatches, selectedSeason));
   }, [allMatches, selectedSeason]);
 
+  const qualificationProfile = useMemo(
+    () => qualificationProfileForSeason(selectedSeason),
+    [selectedSeason]
+  );
+
   if (loading) return <p>Loading standings...</p>;
   if (error) return <p>Error loading standings: {error.message}</p>;
 
@@ -138,7 +162,9 @@ const Standings = () => {
         <h1 className="page-title">
           <AnimatedLetters letterClass={letterClass} strArray={"Standings".split("")} idx={12} />
         </h1>
-        <p className="browse-page__intro">Separate table view by season.</p>
+        <p className="browse-page__intro">
+          Separate table view by season with European qualification bands.
+        </p>
         <p className="status">Last updated: {lastUpdated ? lastUpdated.toLocaleTimeString() : "N/A"}</p>
         <button className="refresh-button" onClick={() => fetchStandings(false)} disabled={isRefreshing}>
           {isRefreshing ? "Refreshing..." : "Refresh now"}
@@ -174,7 +200,7 @@ const Standings = () => {
             </thead>
             <tbody>
               {table.map((row) => (
-                <tr key={row.team.id} className={getQualificationClass(row.position)}>
+                <tr key={row.team.id} className={getQualificationClass(row.position, qualificationProfile)}>
                   <td>{row.position}</td>
                   <td>
                     <span className="club-cell">
@@ -203,10 +229,14 @@ const Standings = () => {
           </table>
         </div>
         <div className="qualification-legend">
-          <span className="legend-item cl">Champions League</span>
-          <span className="legend-item el">Europa League</span>
-          <span className="legend-item ecl">Conference League</span>
+          <span className="legend-item cl">UCL ({qualificationProfile.championsLeagueSpots})</span>
+          <span className="legend-item el">UEL ({qualificationProfile.europaLeagueSpots})</span>
+          <span className="legend-item ecl">UECL ({qualificationProfile.conferenceLeagueSpots})</span>
         </div>
+        <p className="qualification-note">
+          Base league-place model. FA Cup / EFL Cup winners and UCL/UEL title holders can shift which league
+          positions qualify in a given season.
+        </p>
       </div>
     </div>
   );
