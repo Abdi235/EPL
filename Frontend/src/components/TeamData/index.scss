@@ -1,3 +1,4 @@
+@import '../../styles/browsePageGlass.scss';
 
 .fade-in {
   opacity: 0;
@@ -49,19 +50,30 @@
 }
 
 .table-container {
-  .page-title{
-    font-size: 60px;
+  .page-title {
+    font-size: clamp(2.4rem, 5vw, 6rem);
+    line-height: 1.05;
   }
-  margin: 120px 20px;
-  font-family: Arial, sans-serif;
+
+  margin: 0 auto 16px;
+  max-width: min(1200px, calc(100% - 32px));
+  padding: 0;
+  font-family: 'Red Hat Display', Arial, sans-serif;
   opacity: 0;
   margin-bottom: 10px;
   overflow-x: auto;
-  padding-bottom: 24px;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 8px;
+  box-sizing: border-box;
+
+  &.browse-page__glass {
+    padding: clamp(20px, 4vw, 36px);
+    padding-bottom: 28px;
+  }
 
   table {
     width: 100%;
-    min-width: 900px;
+    min-width: 720px;
     border-collapse: collapse;
     border: 1px solid #ccc;
     background-color: #ffffff;

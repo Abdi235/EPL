@@ -64,19 +64,25 @@ const Nations = () => {
       };
       return (
         <>
-          <div className="container nation-page">
-            <h1 className="page-title">
-              <AnimatedLetters letterClass={letterClass} strArray={"Nations".split("")} idx={15} />
-            </h1>
-            <div className="search-bar">
-                    <input
-                        type="text"
-                        placeholder="Search for countries"
-                        value={searchQuery}
-                        onChange={handleSearchChange}
-                    />
-                </div>
-                <div>{renderCountryFlags(filteredNations)}</div>
+          <div className="container nation-page browse-page">
+            <div className="browse-page__glass">
+              <p className="browse-page__eyebrow">International</p>
+              <h1 className="page-title">
+                <AnimatedLetters letterClass={letterClass} strArray={"Nations".split("")} idx={15} />
+              </h1>
+              <p className="browse-page__intro">
+                Choose a country to list players from that nation, then refine by season on the data view.
+              </p>
+              <div className="search-bar">
+                <input
+                  type="text"
+                  placeholder="Search for countries"
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                />
+              </div>
+              <div className="browse-page__body">{renderCountryFlags(filteredNations)}</div>
+            </div>
           </div>
           <Loader type="pacman" />
         </>

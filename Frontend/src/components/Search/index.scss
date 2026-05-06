@@ -1,42 +1,72 @@
+@import '../../styles/browsePageGlass.scss';
 
-.search-bar {
-    display: flex;
-    align-items: center;
-    width: 50%;
-    margin-left: 80px;
-  }
-  
-  input[type="text"] {
-    flex: 1;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 24px;
-    font-size: 16px;
+.browse-page__glass .search-bar,
+.container.teams-page .search-bar,
+.container.nation-page .search-bar,
+.container.position-page .search-bar {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 0 8px;
+
+  input[type='text'] {
+    flex: 1 1 200px;
+    min-width: 0;
+    padding: 12px 16px;
+    border: 1px solid rgba(255, 215, 0, 0.45);
+    border-radius: var(--radius-sm, 10px);
+    font-size: 1.6rem;
+    font-family: inherit;
     outline: none;
+    background: rgba(8, 18, 38, 0.88);
+    color: var(--color-text, #f8fafc);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
   }
-  
+
+  input[type='text']::placeholder {
+    color: rgba(203, 213, 225, 0.75);
+  }
+
+  input[type='text']:focus-visible {
+    border-color: #ffd700;
+    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.25);
+  }
+
   button {
-    background-color: #4285f4;
-    color: white;
-    border: none;
-    border-radius: 24px;
-    padding: 10px 20px;
-    margin-left: 10px;
+    flex: 0 0 auto;
+    padding: 12px 22px;
+    border: 1px solid #ffd700;
+    border-radius: var(--radius-sm, 10px);
+    background: #ffd700;
+    color: #0f172a;
     cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s ease;
+    font-size: 1.5rem;
+    font-weight: 700;
+    font-family: inherit;
+    transition: transform 0.2s ease, filter 0.2s ease;
   }
-  
+
   button:hover {
-    background-color: #357ae8;
+    filter: brightness(1.05);
+    transform: translateY(-1px);
   }
-  
-  button:focus {
+
+  button:focus-visible {
     outline: none;
+    box-shadow: var(--focus-ring, 0 0 0 3px rgba(255, 215, 0, 0.45));
   }
-  
-  @media screen and (max-width: 1000px){
-    .search-bar {
-        margin-left: 0;
-      }
+}
+
+@media screen and (max-width: 1000px) {
+  .browse-page__glass .search-bar,
+  .container.teams-page .search-bar,
+  .container.nation-page .search-bar,
+  .container.position-page .search-bar {
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
   }
+}

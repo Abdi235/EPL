@@ -3,10 +3,24 @@ import { Link, NavLink } from "react-router-dom"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHome, faSearch, faTshirt, faBars, faClose, faUsers, faFlag, faBolt, faTable, faList, faChartBar } from '@fortawesome/free-solid-svg-icons'
 import epLogo from '../../assets/images/EPLOGO.png'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+
+const navLinkClass =
+    (extra) =>
+    ({ isActive }) =>
+        [extra, isActive ? 'active' : ''].filter(Boolean).join(' ')
 
 const Sidebar = () => {
     const [showNav, setShowNav] = useState(false)
+
+    useEffect(() => {
+        if (!showNav) return undefined
+        const previousOverflow = document.body.style.overflow
+        document.body.style.overflow = 'hidden'
+        return () => {
+            document.body.style.overflow = previousOverflow
+        }
+    }, [showNav])
 
     const playTopicSwitchSound = () => {
         if (document.hidden) return
@@ -60,43 +74,58 @@ const Sidebar = () => {
     }
 
     return(
-        <div className = 'nav-bar'> 
-            <Link className = "logo" to="/"> 
+        <header className='nav-bar'>
+            <Link className="logo" to="/" onClick={() => setShowNav(false)}>
                 <img src={epLogo} alt="" aria-hidden="true" />
                 <span className="logo-wordmark">PremierZone</span>
             </Link>
-            <nav className={showNav ? 'mobile-show' : ""} aria-label="Primary navigation">
-                <NavLink exact="true" activeclassname = "active" to="/" aria-label="Home">
-                    <FontAwesomeIcon icon = {faHome}  onClick={handleTopicClick} />
+            <nav
+                id="primary-navigation"
+                className={showNav ? 'mobile-show' : ''}
+                aria-label="Primary navigation"
+            >
+                <button type="button" className="close-icon" aria-label="Close menu" onClick={() => setShowNav(false)}>
+                    <FontAwesomeIcon icon={faClose} />
+                </button>
+                <NavLink end className={navLinkClass('')} to="/" aria-label="Home" onClick={handleTopicClick}>
+                    <FontAwesomeIcon icon={faHome} />
                 </NavLink>
-                <NavLink exact="true" activeclassname = "active" className = "teams-link" to="/teams" aria-label="Teams">
-                    <FontAwesomeIcon icon = {faUsers} onClick={handleTopicClick}/>
+                <NavLink className={navLinkClass('teams-link')} to="/teams" aria-label="Teams" onClick={handleTopicClick}>
+                    <FontAwesomeIcon icon={faUsers} />
                 </NavLink>
-                <NavLink exact="true" activeclassname = "active" className = "nation-link" to="/nation" aria-label="Nation">
-                    <FontAwesomeIcon icon = {faFlag} onClick={handleTopicClick} />
+                <NavLink className={navLinkClass('nation-link')} to="/nation" aria-label="Nation" onClick={handleTopicClick}>
+                    <FontAwesomeIcon icon={faFlag} />
                 </NavLink>
-                <NavLink exact="true" activeclassname = "active" className = "position-link" to="/position" aria-label="Position">
-                    <FontAwesomeIcon icon = {faTshirt}  onClick={handleTopicClick}/>
+                <NavLink className={navLinkClass('position-link')} to="/position" aria-label="Position" onClick={handleTopicClick}>
+                    <FontAwesomeIcon icon={faTshirt} />
                 </NavLink>
-                <NavLink exact="true" activeclassname = "active" className = "search-link" to="/search" aria-label="Search">
-                    <FontAwesomeIcon icon = {faSearch} onClick={handleTopicClick} />
+                <NavLink className={navLinkClass('search-link')} to="/search" aria-label="Search" onClick={handleTopicClick}>
+                    <FontAwesomeIcon icon={faSearch} />
                 </NavLink>
-                <NavLink exact="true" activeclassname = "active" className = "live-link" to="/live" aria-label="Live">
-                    <FontAwesomeIcon icon = {faBolt} onClick={handleTopicClick} />
+                <NavLink className={navLinkClass('live-link')} to="/live" aria-label="Live" onClick={handleTopicClick}>
+                    <FontAwesomeIcon icon={faBolt} />
                 </NavLink>
-                <NavLink exact="true" activeclassname = "active" className = "results-link" to="/results" aria-label="Results">
-                    <FontAwesomeIcon icon = {faList} onClick={handleTopicClick} />
+                <NavLink className={navLinkClass('results-link')} to="/results" aria-label="Results" onClick={handleTopicClick}>
+                    <FontAwesomeIcon icon={faList} />
                 </NavLink>
-                <NavLink exact="true" activeclassname = "active" className = "standings-link" to="/standings" aria-label="Table">
-                    <FontAwesomeIcon icon = {faTable} onClick={handleTopicClick} />
+                <NavLink className={navLinkClass('standings-link')} to="/standings" aria-label="Table" onClick={handleTopicClick}>
+                    <FontAwesomeIcon icon={faTable} />
                 </NavLink>
-                <NavLink exact="true" activeclassname = "active" className = "stats-link" to="/stats" aria-label="Stats">
-                    <FontAwesomeIcon icon = {faChartBar} onClick={handleTopicClick} />
+                <NavLink className={navLinkClass('stats-link')} to="/stats" aria-label="Stats" onClick={handleTopicClick}>
+                    <FontAwesomeIcon icon={faChartBar} />
                 </NavLink>
-                <FontAwesomeIcon icon = {faClose} size = "3x" className="close-icon" onClick={() => setShowNav(false)} />
             </nav>
-            <FontAwesomeIcon onClick={() => setShowNav(true)} icon={faBars} color="#ffd700" size="3x" className="hamburger-icon" />
-        </div>
+            <button
+                type="button"
+                className="hamburger-icon"
+                aria-label="Open menu"
+                aria-expanded={showNav}
+                aria-controls="primary-navigation"
+                onClick={() => setShowNav(true)}
+            >
+                <FontAwesomeIcon icon={faBars} />
+            </button>
+        </header>
     )
 }
 

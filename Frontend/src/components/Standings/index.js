@@ -179,29 +179,34 @@ const Standings = () => {
   if (error) return <p>Error loading standings: {error.message}</p>;
 
   return (
-    <div className="container standings-page">
-      <h1 className="page-title">
-        <AnimatedLetters letterClass={letterClass} strArray={"Standings".split("")} idx={12} />
-      </h1>
-      <p className="status">Last updated: {lastUpdated ? lastUpdated.toLocaleTimeString() : "N/A"}</p>
-      <button className="refresh-button" onClick={() => fetchStandings(false)} disabled={isRefreshing}>
-        {isRefreshing ? "Refreshing..." : "Refresh now"}
-      </button>
-      <div className="season-filter">
-        <select
-          className="season-select"
-          value={selectedSeason}
-          onChange={(event) => setSelectedSeason(event.target.value)}
-        >
-          {seasons.map((season) => (
-            <option key={season} value={season}>
-              {season}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="standings-table-wrapper">
-        <table className="standings-table">
+    <div className="container standings-page browse-page">
+      <div className="browse-page__glass">
+        <p className="browse-page__eyebrow">League table</p>
+        <h1 className="page-title">
+          <AnimatedLetters letterClass={letterClass} strArray={"Standings".split("")} idx={12} />
+        </h1>
+        <p className="browse-page__intro">
+          Full table from your results dataset with European qualification stripes and season switching.
+        </p>
+        <p className="status">Last updated: {lastUpdated ? lastUpdated.toLocaleTimeString() : "N/A"}</p>
+        <button className="refresh-button" onClick={() => fetchStandings(false)} disabled={isRefreshing}>
+          {isRefreshing ? "Refreshing..." : "Refresh now"}
+        </button>
+        <div className="season-filter">
+          <select
+            className="season-select"
+            value={selectedSeason}
+            onChange={(event) => setSelectedSeason(event.target.value)}
+          >
+            {seasons.map((season) => (
+              <option key={season} value={season}>
+                {season}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="standings-table-wrapper">
+          <table className="standings-table">
           <thead>
             <tr>
               <th>#</th>
@@ -244,12 +249,13 @@ const Standings = () => {
               </tr>
             ))}
           </tbody>
-        </table>
-      </div>
-      <div className="qualification-legend">
-        <span className="legend-item cl">Champions League</span>
-        <span className="legend-item el">Europa League</span>
-        <span className="legend-item ecl">Conference League</span>
+          </table>
+        </div>
+        <div className="qualification-legend">
+          <span className="legend-item cl">Champions League</span>
+          <span className="legend-item el">Europa League</span>
+          <span className="legend-item ecl">Conference League</span>
+        </div>
       </div>
     </div>
   );

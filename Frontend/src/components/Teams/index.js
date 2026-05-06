@@ -54,19 +54,25 @@ const Teams = () => {
       }
     return (
         <>
-            <div className="container teams-page">
-                <h1 className = "page-title">
-                    <AnimatedLetters letterClass = {letterClass} strArray={"Teams".split("")} idx={15}/>
-                </h1>
-                <div className="search-bar">
-                    <input
-                        type="text"
-                        placeholder="Search for teams"
-                        value={searchQuery}
-                        onChange={handleSearchChange}
-                    />
+            <div className="container teams-page browse-page">
+                <div className="browse-page__glass">
+                    <p className="browse-page__eyebrow">Clubs</p>
+                    <h1 className="page-title">
+                        <AnimatedLetters letterClass={letterClass} strArray={"Teams".split("")} idx={15} />
+                    </h1>
+                    <p className="browse-page__intro">
+                        Browse every Premier League side and open full squad data for the current dataset season.
+                    </p>
+                    <div className="search-bar">
+                        <input
+                            type="text"
+                            placeholder="Search for teams"
+                            value={searchQuery}
+                            onChange={handleSearchChange}
+                        />
+                    </div>
+                    <div className="browse-page__body">{renderTeam(filteredTeams)}</div>
                 </div>
-                <div>{renderTeam(filteredTeams)}</div>
             </div>
             <Loader type="pacman"/>
         </>

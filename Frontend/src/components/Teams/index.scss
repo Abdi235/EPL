@@ -1,133 +1,122 @@
-.teams-page {
-    width: 100%;
-    position: initial;
-    height: auto;
-    overflow: visible;
-    padding: 0 5vw 60px;
+@import '../../styles/browsePageGlass.scss';
 
-    h1.page-title {
-        margin-left: 0;
-        margin-top: 0;
-        color: #fff;
+.teams-page {
+  width: 100%;
+  position: initial;
+  height: auto;
+  overflow: visible;
+
+  h1.page-title {
+    margin-left: 0;
+    margin-top: 0;
+    color: #fff;
+  }
+
+  .images-container {
+    margin-top: 16px;
+  }
+
+  .image-box {
+    position: relative;
+    flex: 1 1 auto;
+    height: 280px;
+    overflow: hidden;
+    margin-top: 0;
+
+    .teams-image {
+      position: absolute;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .content {
+      position: absolute;
+      width: 100%;
+      z-index: 3;
+      padding: 10px 20px;
+      transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0.2) 0, rgba(0, 0, 0, 1));
+      bottom: -70px;
+    }
+
+    .title {
+      margin-bottom: 0;
+      margin-top: 0;
+      color: #fff;
+      font-size: clamp(1.8rem, 2.5vw, 2.4rem);
+      font-weight: 500;
+      line-height: 1.15;
+    }
+
+    .description {
+      font-size: 14px;
+      margin-bottom: 5px;
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .btn {
+      margin-top: 24px;
+      margin-bottom: 10px;
+      padding: 0 23px;
+      height: 40px;
+      line-height: 34px;
+      border: 2px solid #ffd700;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #fff;
+      background: transparent;
+      text-transform: uppercase;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      background: #ffd700;
+      color: #101828;
+    }
+
+    &:after {
+      content: '';
+      background: linear-gradient(180deg, #ffd700, #000);
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+      opacity: 0;
+    }
+
+    &:hover:after {
+      opacity: 0.85;
+    }
+
+    &:hover .content {
+      bottom: 0;
+      background: transparent;
+    }
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .container.teams-page.browse-page {
+    .image-box {
+      height: 220px;
     }
 
     .images-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 32px;
-        padding-bottom: 80px;
-        margin-top: 40px;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
     }
-    
-    .image-box {
-        position: relative;
-        flex: 1 1 auto;
-        height: 280px;
-        overflow: hidden;
-        border-radius: 10px;
-        max-width: 100%;
-        margin-top: 0;
-
-        .teams-image {
-            position: absolute;
-            z-index: 2;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .content {
-            position: absolute;
-            width: 100%;
-            z-index: 3;
-            padding: 10px 20px;
-            transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
-            background: linear-gradient(
-                180deg,
-                rgba(0, 0, 0, 0.2) 0,
-                rgba(0, 0, 0, 1)
-            );
-            bottom: -70px;
-        }
-
-        .title {
-            margin-bottom: 0;
-            margin-top: 0;
-            color: #fff;
-            font-size: 24px;
-            font-weight: 500;
-            line-height: 24px;
-        }
-
-        .description {
-            font-size: 14px;
-            margin-bottom: 5px;
-            color: #fff;
-            font-weight: 700;
-        }
-
-        .btn {
-            margin-top: 30px;
-            margin-bottom: 10px;
-            padding: 0 23px;
-            height: 40px;
-            line-height: 34px;
-            border: 2px solid #ffd700;
-            border-radius: 4px;
-            font-size: 14px;
-            color: #fff;
-            background: transparent;
-            text-transform: uppercase;
-            font-weight: 700;
-            transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
-            cursor: pointer;
-        }
-
-        .btn:hover {
-            transform: translateY(-3px);
-            background: #ffd700;
-        }
-
-        &:after {
-            content: "";
-            background: linear-gradient(180deg, #ffd700, #000);
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 2;
-            transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
-            opacity: 0;
-        }
-
-        &:hover:after {
-            opacity: 0.85;
-        }
-
-        &:hover .content {
-            bottom: 0;
-            background: transparent;
-        }
-    }
-}
-@media screen and (max-width: 900px){
-    .container.teams-page{
-        padding: 10px 16px 40px;
-
-        h1.page-title{
-            margin-bottom: 16px;
-        }
-
-        .images-container {
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 20px;
-        }
-
-        .image-box{
-            height: 220px;
-        }
-    }
+  }
 }

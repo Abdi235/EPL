@@ -1,8 +1,12 @@
+@import '../../styles/browsePageGlass.scss';
+
 .stats-page {
   .coming-soon-message {
-    margin-top: 14px;
-    color: #ffd700;
-    font-size: 1.15rem;
+    margin-top: 0;
+    color: #d7e6ff;
+    font-size: 1.08rem;
+    line-height: 1.6;
+    max-width: 52ch;
   }
 
   .stats-controls {

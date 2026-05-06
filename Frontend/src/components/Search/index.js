@@ -30,20 +30,24 @@ const Search = () => {
 
     return (
         <>
-            <div className="container teams-page">
-                <h1 className="page-title">
-                    <br/>
-                    <br/>
-                    <AnimatedLetters letterClass={letterClass} strArray={"Search".split("")} idx={15}/>
-                </h1>
-                <div className="search-bar">
-                    <input
-                        type="text"
-                        placeholder="Search for players"
-                        value={searchQuery}
-                        onChange={handleSearchChange}
-                    />
-                    <button onClick={handleGoButtonClick}>Go</button>
+            <div className="container teams-page browse-page">
+                <div className="browse-page__glass">
+                    <p className="browse-page__eyebrow">Player lookup</p>
+                    <h1 className="page-title">
+                        <AnimatedLetters letterClass={letterClass} strArray={"Search".split("")} idx={15} />
+                    </h1>
+                    <p className="browse-page__intro">
+                        Enter a player name to jump to their season stats, minutes, and contributions on the data page.
+                    </p>
+                    <div className="search-bar">
+                        <input
+                            type="text"
+                            placeholder="Search for players"
+                            value={searchQuery}
+                            onChange={handleSearchChange}
+                        />
+                        <button type="button" onClick={handleGoButtonClick}>Go</button>
+                    </div>
                 </div>
             </div>
             <Loader type="pacman"/>

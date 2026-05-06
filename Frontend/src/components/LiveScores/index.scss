@@ -1,3 +1,5 @@
+@import '../../styles/browsePageGlass.scss';
+
 .live-page,
 .results-page {
   .refresh-button {
@@ -35,8 +37,9 @@
     justify-content: space-between;
     gap: 10px;
     margin-bottom: 8px;
-    font-size: 1.5rem;
+    font-size: clamp(1.15rem, 3.2vw, 1.5rem);
     color: #ffffff;
+    flex-wrap: wrap;
   }
 
   .status,
@@ -44,5 +47,10 @@
     color: #ffd700;
     font-size: 1.2rem;
     margin: 8px 0 0;
+  }
+
+  &.browse-page .browse-page__glass .status {
+    color: #d7e6ff;
+    margin-top: 0;
   }
 }

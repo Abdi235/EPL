@@ -57,20 +57,25 @@ const Positions = () => {
 
     return (
         <>
-            <div className="container teams-page">
-                <h1 className="page-title">
-                    <br/>
-                    <AnimatedLetters letterClass={letterClass} strArray={"Positions".split("")} idx={15}/>
-                </h1>
-                <div className="search-bar">
-                    <input
-                        type="text"
-                        placeholder="Search for positions"
-                        value={searchQuery}
-                        onChange={handleSearchChange}
-                    />
+            <div className="container position-page browse-page">
+                <div className="browse-page__glass">
+                    <p className="browse-page__eyebrow">Roles</p>
+                    <h1 className="page-title">
+                        <AnimatedLetters letterClass={letterClass} strArray={"Positions".split("")} idx={15} />
+                    </h1>
+                    <p className="browse-page__intro">
+                        Filter the player pool by on-pitch role—from goalkeepers to forwards—with one click into stats.
+                    </p>
+                    <div className="search-bar">
+                        <input
+                            type="text"
+                            placeholder="Search for positions"
+                            value={searchQuery}
+                            onChange={handleSearchChange}
+                        />
+                    </div>
+                    <div className="browse-page__body">{renderPosition(filteredPositions)}</div>
                 </div>
-                <div>{renderPosition(filteredPositions)}</div>
             </div>
             <Loader type="pacman"/>
         </>

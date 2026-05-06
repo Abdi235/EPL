@@ -252,29 +252,34 @@ const Results = () => {
   if (error) return <p>Error loading results: {error.message}</p>;
 
   return (
-    <div className="container results-page">
-      <h1 className="page-title">
-        <AnimatedLetters
-          letterClass={letterClass}
-          strArray={"Recent Results".split("")}
-          idx={12}
-        />
-      </h1>
+    <div className="container results-page browse-page">
+      <div className="browse-page__glass">
+        <p className="browse-page__eyebrow">Fixtures</p>
+        <h1 className="page-title">
+          <AnimatedLetters
+            letterClass={letterClass}
+            strArray={"Recent Results".split("")}
+            idx={12}
+          />
+        </h1>
+        <p className="browse-page__intro">
+          Scan recent scorelines, filter by club or season, and expand full mini-tables when you need detail.
+        </p>
 
-      <p className="status">
-        Last updated:{" "}
-        {lastUpdated ? lastUpdated.toLocaleTimeString() : "N/A"}
-      </p>
+        <p className="status">
+          Last updated:{" "}
+          {lastUpdated ? lastUpdated.toLocaleTimeString() : "N/A"}
+        </p>
 
-      <button
-        className="refresh-button"
-        onClick={() => fetchResults(false)}
-        disabled={isRefreshing}
-      >
-        {isRefreshing ? "Refreshing..." : "Refresh now"}
-      </button>
+        <button
+          className="refresh-button"
+          onClick={() => fetchResults(false)}
+          disabled={isRefreshing}
+        >
+          {isRefreshing ? "Refreshing..." : "Refresh now"}
+        </button>
 
-      <div className="results-controls">
+        <div className="results-controls">
         <select
           className="team-search-input"
           value={selectedSeason}
@@ -300,15 +305,15 @@ const Results = () => {
             <option key={team} value={team} />
           ))}
         </datalist>
-      </div>
+        </div>
 
-      {teamStats && (
-        <p className="team-stats">
-          {teamStats.teamName} - Wins: {teamStats.wins} | Losses: {teamStats.losses} | Draws: {teamStats.draws}
-        </p>
-      )}
+        {teamStats && (
+          <p className="team-stats">
+            {teamStats.teamName} - Wins: {teamStats.wins} | Losses: {teamStats.losses} | Draws: {teamStats.draws}
+          </p>
+        )}
 
-      <div className="match-list">
+        <div className="match-list">
         {filteredMatches.length === 0 && (
           <p>No recent EPL results available.</p>
         )}
@@ -348,10 +353,10 @@ const Results = () => {
             </div>
           </div>
         ))}
-      </div>
+        </div>
 
-      <div className="season-tables">
-        <h2>Season Tables</h2>
+        <div className="season-tables">
+          <h2>Season Tables</h2>
         {visibleSeasonTables.map((seasonTable) => (
           <div key={seasonTable.season} className="season-table-card">
             <button
@@ -400,6 +405,7 @@ const Results = () => {
             )}
           </div>
         ))}
+        </div>
       </div>
     </div>
   );

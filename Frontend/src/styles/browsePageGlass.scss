@@ -1,0 +1,53 @@
+/* Glass surfaces aligned with Home hero cards — import into page SCSS files */
+
+.browse-page__glass {
+  background: rgba(8, 18, 38, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+  padding: clamp(20px, 4vw, 36px);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.browse-page__eyebrow {
+  margin: 0 0 10px;
+  color: #9fc4ff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.browse-page__intro {
+  margin: 0 0 20px;
+  color: #d7e6ff;
+  font-size: 1.05rem;
+  line-height: 1.65;
+  max-width: 65ch;
+}
+
+.container.browse-page h1.page-title {
+  margin-top: 0;
+  margin-left: 0;
+  left: 0;
+}
+
+.browse-page .images-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  gap: clamp(16px, 3vw, 28px);
+  padding-bottom: clamp(8px, 2vw, 20px);
+  margin-top: 8px;
+  margin-left: 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+.browse-page .image-box {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+  border-radius: 12px;
+}

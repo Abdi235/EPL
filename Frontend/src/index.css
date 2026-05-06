@@ -1,22 +1,92 @@
+:root {
+  --color-bg-deep: #020617;
+  --color-bg-mid: #0b1120;
+  --color-accent: #ffd700;
+  --color-accent-soft: rgba(255, 215, 0, 0.12);
+  --color-text: #f8fafc;
+  --color-text-muted: #cbd5e1;
+  --color-surface: rgba(8, 18, 38, 0.82);
+  --color-border: rgba(255, 255, 255, 0.12);
+  --radius-md: 12px;
+  --radius-sm: 10px;
+  --nav-height: 100px;
+  --nav-height-mobile: 92px;
+  --page-pad-x: clamp(16px, 4vw, 40px);
+  --page-pad-y: clamp(24px, 4vw, 40px);
+  --focus-ring: 0 0 0 3px rgba(255, 215, 0, 0.45);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 html {
-  font-size: 62.5%; 
+  font-size: 62.5%;
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 body {
   margin: 0;
-  font-family: 300 11px/1.4 'Red Hat Display', 'sans-serif'; 
-  color: #fff;
-  background: radial-gradient(circle at top, #37003c 0, #0b1120 55%, #020617 100%);
-  display: block;
+  min-height: 100vh;
+  font-family: 'Red Hat Display', system-ui, -apple-system, sans-serif;
+  font-size: 1.6rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--color-text);
+  background: radial-gradient(
+      circle at 50% -20%,
+      #37003c 0,
+      var(--color-bg-mid) 52%,
+      var(--color-bg-deep) 100%
+    );
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+::selection {
+  background: rgba(255, 215, 0, 0.35);
+  color: #0f172a;
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 body::-webkit-scrollbar {
   width: 10px;
 }
 
+body::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+}
+
 body::-webkit-scrollbar-thumb {
-  background: #fff; 
-  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 215, 0, 0.45);
+  background-clip: padding-box;
 }

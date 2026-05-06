@@ -1,7 +1,8 @@
 .home-page {
   position: relative;
   min-height: 100vh;
-  padding: 0 0 24px;
+  min-height: 100dvh;
+  padding: 0 0 calc(24px + env(safe-area-inset-bottom, 0px));
 
   .overlay {
     position: absolute;
@@ -183,15 +184,26 @@
       grid-template-columns: 1fr;
       min-height: auto;
       padding-top: 0;
+      gap: 16px;
     }
 
     .hero-content,
     .hero-panel {
       padding: 20px;
     }
+
+    .hero-title img {
+      width: clamp(120px, 42vw, 170px);
+    }
   }
 
   .home-metrics {
     grid-template-columns: 1fr;
+  }
+}
+
+@media screen and (min-width: 520px) and (max-width: 1000px) {
+  .home-metrics {
+    grid-template-columns: repeat(3, 1fr);
   }
 }

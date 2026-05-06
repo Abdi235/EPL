@@ -94,10 +94,15 @@ const TeamData = () => {
 
   return (
     <div className={`fade-in ${loading ? "loading" : ""}`}>
-      <div className="table-container">
-        <h1 className="page-title">
-          <AnimatedLetters letterClass={letterClass} strArray={"Player Data".split("")} idx={12} />
-        </h1>
+      <div className="container browse-page">
+        <div className="table-container browse-page__glass">
+          <p className="browse-page__eyebrow">Squad</p>
+          <h1 className="page-title">
+            <AnimatedLetters letterClass={letterClass} strArray={"Player Data".split("")} idx={12} />
+          </h1>
+          <p className="browse-page__intro">
+            Rosters and per-player stats for the season you select—open this view from teams, nations, positions, or search.
+          </p>
         {hasFilter && (
           <div className="player-data-toolbar">
             <label className="player-data-season-label" htmlFor="player-season">
@@ -181,6 +186,7 @@ const TeamData = () => {
             Show More
           </button>
         )}
+        </div>
       </div>
     </div>
   );
