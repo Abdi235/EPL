@@ -1,10 +1,5 @@
 import API_BASE_URL from "../config/api.js";
 
-function apiUrl(path) {
-  const base = String(API_BASE_URL || "").replace(/\/+$/, "");
-  return base ? `${base}${path}` : path;
-}
-
 function candidateUrls(path) {
   const base = String(API_BASE_URL || "").replace(/\/+$/, "");
   const urls = [];
@@ -25,8 +20,9 @@ function parseLiveLeagueFromPayload(leagueTableNode) {
  * Matches + live league table from Spring Boot (CSVs + API-Football when FOOTBALL_API_KEY is set).
  * @returns {Promise<{ matches: Array, liveLeague: { seasonLabel: string, table: Array } | null, updatedAt: string | null } | null>}
  */
-export async function fetchMatchdayData() {
-  const path = "/api/v1/epl/matchday-data";
+export async function fetchMatchdayData(refresh = false) {
+  const qs = refresh ? "?refresh=true" : "";
+  const path = `/api/v1/epl/matchday-data${qs}`;
   const tried = new Set();
   for (const url of candidateUrls(path)) {
     if (tried.has(url)) continue;

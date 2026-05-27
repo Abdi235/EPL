@@ -17,7 +17,7 @@ export function useEplMatchdayData() {
   const load = useCallback(async (isInitialLoad = false) => {
     try {
       if (!isInitialLoad) setIsRefreshing(true);
-      const pack = await fetchMatchdayData();
+      const pack = await fetchMatchdayData(isInitialLoad);
       if (pack) {
         setMatches(pack.matches);
         setLiveLeague(pack.liveLeague);

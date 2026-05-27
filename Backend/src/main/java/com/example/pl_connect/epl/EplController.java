@@ -1,5 +1,6 @@
 package com.example.pl_connect.epl;
 
+import com.example.pl_connect.matchdata.EplMatchdayCacheService;
 import com.example.pl_connect.matchdata.NormalizedMatchesService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,14 +26,17 @@ public class EplController {
 
     private final EplService eplService;
     private final NormalizedMatchesService normalizedMatchesService;
+    private final EplMatchdayCacheService eplMatchdayCacheService;
     private final ObjectMapper objectMapper;
 
     public EplController(
             EplService eplService,
             NormalizedMatchesService normalizedMatchesService,
+            EplMatchdayCacheService eplMatchdayCacheService,
             ObjectMapper objectMapper) {
         this.eplService = eplService;
         this.normalizedMatchesService = normalizedMatchesService;
+        this.eplMatchdayCacheService = eplMatchdayCacheService;
         this.objectMapper = objectMapper;
     }
 
@@ -106,16 +110,22 @@ public class EplController {
      * Matches + official league table for the current season (one refresh for Home / Results / Table).
      */
     @GetMapping("/matchday-data")
-    public ResponseEntity<?> getMatchdayData() {
+    public ResponseEntity<?> getMatchdayData(
+            @RequestParam(name = "refresh", defaultValue = "false") boolean refresh) {
         try {
-            ObjectNode body = objectMapper.createObjectNode();
-            body.set("matches", normalizedMatchesService.buildNormalizedMatches());
-            body.put("updatedAt", Instant.now().toString());
-            try {
-                body.set("leagueTable", eplService.getLeagueTable(null));
-            } catch (RestClientException ex) {
-                body.putNull("leagueTable");
-            }
+            ObjectNode body = eplMatchdayCacheService.getMatchdayData(refresh);
+            return ResponseEntity.ok()
+                    .cacheControl(CacheControl.noStore().mustRevalidate())
+                    .body(body);
+        } catch (IOException ex) {
+            return buildMatchDataError(ex);
+        }
+    }
+
+    @GetMapping("/refresh")
+    public ResponseEntity<?> refreshMatchdayData() {
+        try {
+            ObjectNode body = eplMatchdayCacheService.refresh();
             return ResponseEntity.ok()
                     .cacheControl(CacheControl.noStore().mustRevalidate())
                     .body(body);

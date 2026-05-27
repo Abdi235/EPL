@@ -16,6 +16,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -41,18 +44,46 @@ public class NormalizedMatchesService {
     private static final Pattern UK_DATE = Pattern.compile("^(\\d{1,2})/(\\d{1,2})/(\\d{4})$");
 
     private final EplService eplService;
+    private final FootballDataUkSyncService footballDataUkSyncService;
     private final ObjectMapper objectMapper;
 
-    public NormalizedMatchesService(EplService eplService, ObjectMapper objectMapper) {
+    public NormalizedMatchesService(
+            EplService eplService,
+            FootballDataUkSyncService footballDataUkSyncService,
+            ObjectMapper objectMapper) {
         this.eplService = eplService;
+        this.footballDataUkSyncService = footballDataUkSyncService;
         this.objectMapper = objectMapper;
     }
 
+    public static int currentSeasonOpeningYear() {
+        LocalDate now = LocalDate.now();
+        return now.getMonthValue() >= 7 ? now.getYear() : now.getYear() - 1;
+    }
+
+    public static String currentSeasonLabel() {
+        int y = currentSeasonOpeningYear();
+        return y + "/" + (y + 1);
+    }
+
     public ArrayNode buildNormalizedMatches() throws IOException {
+        List<NormMatch> combined = buildCombinedNormMatches();
+        ArrayNode out = objectMapper.createArrayNode();
+        for (NormMatch m : combined) {
+            out.add(toJson(m));
+        }
+        return out;
+    }
+
+    public ArrayNode buildLeagueTableFromMatches(String seasonLabel) throws IOException {
+        return buildLeagueTableFromList(buildCombinedNormMatches(), seasonLabel);
+    }
+
+    private List<NormMatch> buildCombinedNormMatches() throws IOException {
         List<NormMatch> merged = new ArrayList<>();
         merged.addAll(readCsvClasspathSafe("match-data/matches.2.csv"));
         merged.addAll(readCsvClasspathSafe("match-data/pl_matches_2024_25.csv"));
-        merged.addAll(readCsvClasspathSafe("match-data/football_data_E0_2526.csv"));
+        merged.addAll(readCurrentSeasonE0Rows());
 
         Map<String, NormMatch> byKey = new LinkedHashMap<>();
         for (NormMatch m : merged) {
@@ -83,12 +114,105 @@ public class NormalizedMatchesService {
 
         applyGameweekInference(combined);
         combined.sort(Comparator.comparing((NormMatch m) -> m.date).reversed());
+        return combined;
+    }
 
-        ArrayNode out = objectMapper.createArrayNode();
-        for (NormMatch m : combined) {
-            out.add(toJson(m));
+    private List<NormMatch> readCurrentSeasonE0Rows() {
+        Path synced = footballDataUkSyncService.syncedE0Path();
+        try {
+            if (Files.exists(synced)) {
+                return readCsvFile(synced);
+            }
+        } catch (IOException ignored) {
         }
-        return out;
+        return readCsvClasspathSafe("match-data/football_data_E0_2526.csv");
+    }
+
+    private ArrayNode buildLeagueTableFromList(List<NormMatch> combined, String seasonLabel) {
+        Map<String, TeamStandingRow> tableMap = new LinkedHashMap<>();
+        for (NormMatch match : combined) {
+            if (!seasonLabel.equals(match.season) || !isMatchCompleted(match)) {
+                continue;
+            }
+            TeamStandingRow home = ensureStandingRow(tableMap, match.homeTeam);
+            TeamStandingRow away = ensureStandingRow(tableMap, match.awayTeam);
+            int hg = match.homeScore;
+            int ag = match.awayScore;
+            home.played++;
+            away.played++;
+            home.gf += hg;
+            home.ga += ag;
+            away.gf += ag;
+            away.ga += hg;
+            if (hg > ag) {
+                home.won++;
+                home.points += 3;
+                away.lost++;
+            } else if (ag > hg) {
+                away.won++;
+                away.points += 3;
+                home.lost++;
+            } else {
+                home.draw++;
+                away.draw++;
+                home.points++;
+                away.points++;
+            }
+        }
+
+        List<TeamStandingRow> rows = new ArrayList<>(tableMap.values());
+        rows.sort(Comparator
+                .comparingInt((TeamStandingRow r) -> r.points).reversed()
+                .thenComparingInt(r -> r.gf - r.ga).reversed()
+                .thenComparingInt(r -> r.gf).reversed()
+                .thenComparing(r -> r.name.toLowerCase(Locale.ROOT)));
+
+        ArrayNode table = objectMapper.createArrayNode();
+        int position = 1;
+        for (TeamStandingRow row : rows) {
+            ObjectNode out = objectMapper.createObjectNode();
+            ObjectNode team = objectMapper.createObjectNode();
+            team.put("id", Math.abs(row.name.hashCode()));
+            team.put("name", row.name);
+            out.set("team", team);
+            out.put("position", position++);
+            out.put("playedGames", row.played);
+            out.put("won", row.won);
+            out.put("draw", row.draw);
+            out.put("lost", row.lost);
+            out.put("goalsFor", row.gf);
+            out.put("goalsAgainst", row.ga);
+            out.put("goalDifference", row.gf - row.ga);
+            out.put("points", row.points);
+            table.add(out);
+        }
+        return table;
+    }
+
+    private static TeamStandingRow ensureStandingRow(Map<String, TeamStandingRow> map, String name) {
+        return map.computeIfAbsent(name, TeamStandingRow::new);
+    }
+
+    private List<NormMatch> readCsvFile(Path path) throws IOException {
+        List<NormMatch> rows = new ArrayList<>();
+        try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
+            CSVFormat format = CSVFormat.DEFAULT.builder()
+                    .setHeader()
+                    .setSkipHeaderRecord(true)
+                    .setIgnoreEmptyLines(true)
+                    .setTrim(true)
+                    .setAllowMissingColumnNames(true)
+                    .build();
+            try (CSVParser parser = CSVParser.parse(reader, format)) {
+                for (CSVRecord rec : parser) {
+                    NormMatch m = normalizeMatchRow(recordToMap(rec));
+                    if (m != null) {
+                        rows.add(m);
+                    }
+                }
+            }
+        }
+        return rows;
     }
 
     private List<NormMatch> readCsvClasspathSafe(String location) {
@@ -564,5 +688,20 @@ public class NormalizedMatchesService {
         Integer gameweek;
         String status;
         String kickoff;
+    }
+
+    private static final class TeamStandingRow {
+        final String name;
+        int played;
+        int won;
+        int draw;
+        int lost;
+        int gf;
+        int ga;
+        int points;
+
+        TeamStandingRow(String name) {
+            this.name = name;
+        }
     }
 }
