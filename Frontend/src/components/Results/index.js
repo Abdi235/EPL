@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AnimatedLetters from "../AnimatedLetters";
-import { loadNormalizedMatches, isMatchCompleted } from "../../utils/matchDatasets";
+import { isMatchCompleted, displayMatchScore } from "../../utils/matchDatasets";
+import { resolveCurrentSeasonLabel } from "../../utils/eplApi";
+import { useEplMatchdayData } from "../../hooks/useEplMatchdayData";
 import { getEplTeamLogoUrl } from "../../utils/eplTeamLogos";
 import "./index.scss";
 const normalizeText = (value) => String(value || "").trim().toLowerCase();
@@ -11,40 +13,17 @@ const ALL_GAMEWEEKS_VALUE = "__all_gameweeks__";
 const getTeamLogo = (teamName) => getEplTeamLogoUrl(teamName);
 
 const Results = () => {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [matches, setMatches] = useState([]);
-  const [lastUpdated, setLastUpdated] = useState(null);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const { matches, liveLeague, loading, error, lastUpdated, isRefreshing, refresh } =
+    useEplMatchdayData();
   const [teamQuery, setTeamQuery] = useState("");
   const [selectedSeason, setSelectedSeason] = useState("");
   const [selectedGameweek, setSelectedGameweek] = useState(ALL_GAMEWEEKS_VALUE);
   const [letterClass] = useState("text-animate");
 
-  const fetchResults = useCallback(async (isInitialLoad = false) => {
-    try {
-      if (!isInitialLoad) {
-        setIsRefreshing(true);
-      }
-
-      const normalized = await loadNormalizedMatches();
-
-      setMatches(normalized);
-      setLastUpdated(new Date());
-      setError(null);
-    } catch (err) {
-      setError(err);
-    } finally {
-      if (isInitialLoad) {
-        setLoading(false);
-      }
-      setIsRefreshing(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchResults(true);
-  }, [fetchResults]);
+  const currentSeason = useMemo(
+    () => resolveCurrentSeasonLabel(matches, liveLeague),
+    [matches, liveLeague]
+  );
 
   const seasons = useMemo(() => {
     const unique = new Set(
@@ -56,10 +35,12 @@ const Results = () => {
   }, [matches]);
 
   useEffect(() => {
-    if (!selectedSeason && seasons.length > 0) {
+    if (!selectedSeason && currentSeason) {
+      setSelectedSeason(currentSeason);
+    } else if (!selectedSeason && seasons.length > 0) {
       setSelectedSeason(seasons[0]);
     }
-  }, [selectedSeason, seasons]);
+  }, [selectedSeason, seasons, currentSeason]);
 
   useEffect(() => {
     setSelectedGameweek(ALL_GAMEWEEKS_VALUE);
@@ -151,7 +132,8 @@ const Results = () => {
           />
         </h1>
         <p className="browse-page__intro">
-          Filter by season, gameweek, and team to inspect specific results quickly.
+          Filter by season, gameweek, and team. Current-season fixtures and scores refresh from the backend
+          every few minutes.
         </p>
 
         <p className="status">
@@ -161,7 +143,7 @@ const Results = () => {
 
         <button
           className="refresh-button"
-          onClick={() => fetchResults(false)}
+          onClick={refresh}
           disabled={isRefreshing}
         >
           {isRefreshing ? "Refreshing..." : "Refresh now"}
@@ -177,6 +159,7 @@ const Results = () => {
             {seasons.map((season) => (
               <option key={season} value={season}>
                 {season}
+                {season === currentSeason ? " (current)" : ""}
               </option>
             ))}
           </select>
@@ -225,6 +208,9 @@ const Results = () => {
               {match.date}
               {match.kickoff ? ` · ${match.kickoff}` : ""}
               {match.gameweek != null ? ` · GW ${match.gameweek}` : ""}
+              {match.status === "live" ? (
+                <span className="match-card__live"> · LIVE</span>
+              ) : null}
             </p>
 
             <div className="teams">
@@ -239,7 +225,7 @@ const Results = () => {
                 )}
                 <span>{match.homeTeam}</span>
               </span>
-              <span>{isMatchCompleted(match) ? match.homeScore : "—"}</span>
+              <span>{displayMatchScore(match, "home")}</span>
             </div>
 
             <div className="teams">
@@ -254,7 +240,7 @@ const Results = () => {
                 )}
                 <span>{match.awayTeam}</span>
               </span>
-              <span>{isMatchCompleted(match) ? match.awayScore : "—"}</span>
+              <span>{displayMatchScore(match, "away")}</span>
             </div>
           </div>
         ))}

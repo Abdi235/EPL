@@ -16,8 +16,14 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.Comparator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -96,6 +102,102 @@ public class EplService {
         return normalizeMatches(raw);
     }
 
+    /**
+     * All fixtures for an EPL season (paginated upstream), normalized for the React app.
+     *
+     * @param seasonYear API-Football season year (e.g. 2025 for 2025/26). Null → current season.
+     */
+    public JsonNode getSeasonMatches(Integer seasonYearParam) {
+        int seasonYear = seasonYearParam != null ? seasonYearParam : getCurrentSeason();
+        ArrayNode allMatches = objectMapper.createArrayNode();
+        int totalPages = 1;
+        for (int page = 1; page <= totalPages; page++) {
+            String url = UriComponentsBuilder.fromHttpUrl(baseUrl + "/fixtures")
+                    .queryParam("league", EPL_LEAGUE_ID)
+                    .queryParam("season", seasonYear)
+                    .queryParam("page", page)
+                    .toUriString();
+            JsonNode raw = executeRequest(url);
+            if (page == 1) {
+                totalPages = Math.max(1, raw.path("paging").path("total").asInt(1));
+            }
+            JsonNode responseItems = raw.path("response");
+            if (responseItems.isArray()) {
+                for (JsonNode item : responseItems) {
+                    ObjectNode m = normalizeFixtureToAppMatch(item, seasonYear);
+                    if (m != null) {
+                        allMatches.add(m);
+                    }
+                }
+            }
+        }
+
+        ObjectNode result = objectMapper.createObjectNode();
+        result.put("seasonYear", seasonYear);
+        result.put("seasonLabel", formatSeasonLabel(seasonYear));
+        result.put("source", "api-football");
+        result.set("matches", allMatches);
+        return result;
+    }
+
+    /**
+     * Official league table from API-Football for the given season year.
+     *
+     * @param seasonYear e.g. 2025 for 2025/26. Null → current season.
+     */
+    public JsonNode getLeagueTable(Integer seasonYearParam) {
+        int seasonYear = seasonYearParam != null ? seasonYearParam : getCurrentSeason();
+        String url = UriComponentsBuilder.fromHttpUrl(baseUrl + "/standings")
+                .queryParam("league", EPL_LEAGUE_ID)
+                .queryParam("season", seasonYear)
+                .toUriString();
+        JsonNode raw = executeRequest(url);
+
+        ArrayNode table = objectMapper.createArrayNode();
+        JsonNode response0 = raw.path("response");
+        if (response0.isArray() && !response0.isEmpty()) {
+            JsonNode league = response0.get(0).path("league");
+            JsonNode groups = league.path("standings");
+            if (groups.isArray() && !groups.isEmpty()) {
+                JsonNode rows = groups.get(0);
+                if (rows.isArray()) {
+                    for (JsonNode row : rows) {
+                        ObjectNode out = objectMapper.createObjectNode();
+                        JsonNode all = row.path("all");
+                        JsonNode team = row.path("team");
+                        ObjectNode teamNode = objectMapper.createObjectNode();
+                        teamNode.put("id", team.path("id").asInt());
+                        teamNode.put("name", team.path("name").asText(""));
+                        out.set("team", teamNode);
+                        out.put("position", row.path("rank").asInt());
+                        out.put("playedGames", all.path("played").asInt());
+                        out.put("won", all.path("win").asInt());
+                        out.put("draw", all.path("draw").asInt());
+                        out.put("lost", all.path("lose").asInt());
+                        JsonNode goals = all.path("goals");
+                        int gf = goals.path("for").asInt();
+                        int ga = goals.path("against").asInt();
+                        out.put("goalsFor", gf);
+                        out.put("goalsAgainst", ga);
+                        int gd = row.path("goalsDiff").isMissingNode()
+                                ? gf - ga
+                                : row.path("goalsDiff").asInt();
+                        out.put("goalDifference", gd);
+                        out.put("points", row.path("points").asInt());
+                        table.add(out);
+                    }
+                }
+            }
+        }
+
+        ObjectNode result = objectMapper.createObjectNode();
+        result.put("seasonYear", seasonYear);
+        result.put("seasonLabel", formatSeasonLabel(seasonYear));
+        result.put("source", "api-football");
+        result.set("table", table);
+        return result;
+    }
+
     public Map<String, Object> getHealthStatus() {
         Map<String, Object> status = new HashMap<>();
         boolean hasApiKey = apiKey != null && !apiKey.isBlank();
@@ -138,6 +240,93 @@ public class EplService {
     private int getCurrentSeason() {
         LocalDate now = LocalDate.now();
         return now.getMonthValue() >= 7 ? now.getYear() : now.getYear() - 1;
+    }
+
+    private static final Pattern ROUND_TRAILING_NUMBER = Pattern.compile("(\\d+)\\s*$");
+
+    private String formatSeasonLabel(int openingYear) {
+        return openingYear + "/" + (openingYear + 1);
+    }
+
+    private Integer parseRoundGameweek(String round) {
+        if (round == null || round.isBlank()) {
+            return null;
+        }
+        Matcher m = ROUND_TRAILING_NUMBER.matcher(round.trim());
+        if (m.find()) {
+            int n = Integer.parseInt(m.group(1));
+            return n >= 1 && n <= 50 ? n : null;
+        }
+        return null;
+    }
+
+    private void putFixtureLondonDateAndKickoff(ObjectNode match, JsonNode fixture) {
+        String dateStr = fixture.path("date").asText("");
+        if (dateStr.isEmpty()) {
+            match.put("date", "");
+            match.putNull("kickoff");
+            return;
+        }
+        try {
+            Instant instant = Instant.parse(dateStr);
+            ZonedDateTime uk = instant.atZone(ZoneId.of("Europe/London"));
+            match.put("date", uk.toLocalDate().toString());
+            match.put("kickoff", String.format("%02d:%02d", uk.getHour(), uk.getMinute()));
+        } catch (DateTimeParseException ex) {
+            match.put("date", dateStr.length() >= 10 ? dateStr.substring(0, 10) : dateStr);
+            match.putNull("kickoff");
+        }
+    }
+
+    private ObjectNode normalizeFixtureToAppMatch(JsonNode item, int seasonYear) {
+        JsonNode fixture = item.path("fixture");
+        JsonNode teams = item.path("teams");
+        JsonNode goals = item.path("goals");
+        String statusShort = fixture.path("status").path("short").asText("");
+
+        String statusOut;
+        if ("FT".equals(statusShort) || "AET".equals(statusShort) || "PEN".equals(statusShort)
+                || "AWD".equals(statusShort) || "WO".equals(statusShort)) {
+            statusOut = "finished";
+        } else if ("NS".equals(statusShort) || "TBD".equals(statusShort) || "PST".equals(statusShort)
+                || "CANC".equals(statusShort) || "ABD".equals(statusShort) || "SUSP".equals(statusShort)) {
+            statusOut = "scheduled";
+        } else {
+            statusOut = "live";
+        }
+
+        ObjectNode match = objectMapper.createObjectNode();
+        match.put("season", formatSeasonLabel(seasonYear));
+        putFixtureLondonDateAndKickoff(match, fixture);
+
+        String homeName = teams.path("home").path("name").asText("");
+        String awayName = teams.path("away").path("name").asText("");
+        if (homeName.isEmpty() || awayName.isEmpty()) {
+            return null;
+        }
+        match.put("homeTeam", homeName);
+        match.put("awayTeam", awayName);
+
+        Integer gw = parseRoundGameweek(item.path("league").path("round").asText(""));
+        if (gw != null) {
+            match.put("gameweek", gw);
+        } else {
+            match.putNull("gameweek");
+        }
+
+        match.put("status", statusOut);
+
+        boolean hasHome = !goals.path("home").isNull();
+        boolean hasAway = !goals.path("away").isNull();
+        if (hasHome && hasAway) {
+            match.put("homeScore", goals.path("home").asInt());
+            match.put("awayScore", goals.path("away").asInt());
+        } else {
+            match.putNull("homeScore");
+            match.putNull("awayScore");
+        }
+
+        return match;
     }
 
     private ObjectNode createStandingRow(String teamName, List<Player> teamPlayers) {

@@ -1,13 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import AnimatedLetters from '../AnimatedLetters';
-import { loadNormalizedMatches } from '../../utils/matchDatasets';
+import { displayMatchScore } from '../../utils/matchDatasets';
 import {
   selectCurrentMatchweekHighlights,
   buildHighlightsSearchUrl,
 } from '../../utils/currentMatchweekHighlights';
 import { resolveYoutubeHighlightMedia } from '../../utils/youtubeHighlightUrl';
 import { FUBO_SPORTS_YOUTUBE_CHANNEL_URL } from '../../config/fuboYoutube';
+import { useEplMatchdayData } from '../../hooks/useEplMatchdayData';
 import { getEplTeamLogoUrl } from '../../utils/eplTeamLogos';
 import './index.scss';
 import epLogo from '../../assets/images/EPLOGO.png';
@@ -32,12 +33,8 @@ function formatFixtureDate(ymd) {
 
 const Home = () => {
   const [letterClass, setLetterClass] = useState('text-animate');
-  const [highlightsState, setHighlightsState] = useState({
-    status: 'loading',
-    season: null,
-    weekRangeLabel: '',
-    matches: [],
-  });
+  const { matches: allMatches, liveLeague, loading, error, lastUpdated, refresh, isRefreshing } =
+    useEplMatchdayData();
   const [highlightMediaByKey, setHighlightMediaByKey] = useState({});
   const nameArray = 'Welcome to'.split('');
   const jobArray = 'PremierZone'.split('');
@@ -49,38 +46,19 @@ const Home = () => {
     return () => clearTimeout(timerId);
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-    const loadHighlights = async () => {
-      try {
-        const all = await loadNormalizedMatches();
-        if (cancelled) return;
-        const { season, matches, weekRangeLabel } = selectCurrentMatchweekHighlights(all, {
-          maxItems: 6,
-        });
-        setHighlightsState({
-          status: 'ok',
-          season,
-          weekRangeLabel,
-          matches,
-        });
-      } catch {
-        if (!cancelled) {
-          setHighlightsState((s) => ({ ...s, status: 'error', matches: [] }));
-        }
-      }
-    };
+  const highlights = useMemo(() => {
+    if (loading || error || !allMatches.length) {
+      return { season: null, weekRangeLabel: '', matches: [] };
+    }
+    return selectCurrentMatchweekHighlights(allMatches, { maxItems: 6 });
+  }, [allMatches, loading, error]);
 
-    loadHighlights();
-    const intervalId = window.setInterval(loadHighlights, 120000);
+  const { season, weekRangeLabel, matches } = highlights;
 
-    return () => {
-      cancelled = true;
-      window.clearInterval(intervalId);
-    };
-  }, []);
-
-  const { status, season, weekRangeLabel, matches } = highlightsState;
+  const leagueRows = useMemo(() => {
+    if (!liveLeague?.table?.length) return [];
+    return [...liveLeague.table].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+  }, [liveLeague]);
 
   useEffect(() => {
     if (!matches.length) {
@@ -161,6 +139,69 @@ const Home = () => {
       </div>
 
       <div className="container home-highlights-wrap">
+        {leagueRows.length > 0 && (
+          <section className="home-table" aria-labelledby="home-table-heading">
+            <div className="home-table__top">
+              <div>
+                <p className="eyebrow">Live table</p>
+                <h2 id="home-table-heading" className="home-table__title">
+                  {liveLeague.seasonLabel} standings
+                </h2>
+                <p className="home-table__updated">
+                  Updated {lastUpdated ? lastUpdated.toLocaleTimeString() : '—'}
+                  <button
+                    type="button"
+                    className="home-table__refresh"
+                    onClick={refresh}
+                    disabled={isRefreshing}
+                  >
+                    {isRefreshing ? 'Refreshing…' : 'Refresh'}
+                  </button>
+                </p>
+              </div>
+              <Link to="/standings" className="home-highlights__all">
+                Full table
+              </Link>
+            </div>
+            <div className="home-table__scroll">
+              <table className="home-table__grid">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Club</th>
+                    <th>P</th>
+                    <th>GD</th>
+                    <th>Pts</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {leagueRows.map((row) => (
+                    <tr key={row.team?.id ?? row.team?.name}>
+                      <td>{row.position}</td>
+                      <td>
+                        <span className="home-table__club">
+                          {getEplTeamLogoUrl(row.team?.name) && (
+                            <img
+                              src={getEplTeamLogoUrl(row.team.name)}
+                              alt=""
+                              className="home-table__crest"
+                              loading="lazy"
+                            />
+                          )}
+                          <span>{row.team?.name}</span>
+                        </span>
+                      </td>
+                      <td>{row.playedGames}</td>
+                      <td>{row.goalDifference}</td>
+                      <td className="home-table__pts">{row.points}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+
         <section className="home-highlights" aria-labelledby="home-highlights-heading">
           <div className="home-highlights__top">
             <div>
@@ -191,16 +232,19 @@ const Home = () => {
             </Link>
           </div>
 
-          {status === 'loading' && (
+          {loading && (
             <p className="home-highlights__status">Loading this week&apos;s matches…</p>
           )}
-          {status === 'error' && (
+          {error && (
             <p className="home-highlights__status">
-              Could not load match data. Open{' '}
-              <Link to="/results">Results</Link> or check that CSV data is available.
+              Could not load match data. Start the backend on port 9090 with FOOTBALL_API_KEY set, then{' '}
+              <button type="button" className="home-highlights__retry" onClick={refresh}>
+                retry
+              </button>
+              .
             </p>
           )}
-          {status === 'ok' && matches.length === 0 && (
+          {!loading && !error && matches.length === 0 && (
             <p className="home-highlights__status">No completed fixtures in range yet.</p>
           )}
 
@@ -229,9 +273,9 @@ const Home = () => {
                           <span className="home-highlight-card__name">{match.homeTeam}</span>
                         </div>
                         <div className="home-highlight-card__score" aria-label="Score">
-                          <span>{match.homeScore}</span>
+                          <span>{displayMatchScore(match, 'home')}</span>
                           <span className="home-highlight-card__dash">–</span>
-                          <span>{match.awayScore}</span>
+                          <span>{displayMatchScore(match, 'away')}</span>
                         </div>
                         <div className="home-highlight-card__side home-highlight-card__side--away">
                           <span className="home-highlight-card__name">{match.awayTeam}</span>

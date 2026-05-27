@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AnimatedLetters from "../AnimatedLetters";
-import { loadNormalizedMatches, isMatchCompleted } from "../../utils/matchDatasets";
+import { isMatchCompleted } from "../../utils/matchDatasets";
+import { resolveCurrentSeasonLabel } from "../../utils/eplApi";
+import { useEplMatchdayData } from "../../hooks/useEplMatchdayData";
 import { getEplTeamLogoUrl } from "../../utils/eplTeamLogos";
 import "./index.scss";
 
@@ -103,54 +105,47 @@ const getQualificationClass = (position, profile) => {
 const getTeamLogo = (teamName) => getEplTeamLogoUrl(teamName);
 
 const Standings = () => {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [allMatches, setAllMatches] = useState([]);
+  const { matches: allMatches, liveLeague, loading, error, lastUpdated, isRefreshing, refresh } =
+    useEplMatchdayData();
   const [table, setTable] = useState([]);
-  const [lastUpdated, setLastUpdated] = useState(null);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedSeason, setSelectedSeason] = useState("");
   const [letterClass] = useState("text-animate");
 
-  const fetchStandings = useCallback(async (isInitialLoad = false) => {
-    try {
-      if (!isInitialLoad) setIsRefreshing(true);
-      const normalized = await loadNormalizedMatches();
-      setAllMatches(normalized);
-      setLastUpdated(new Date());
-      setError(null);
-    } catch (err) {
-      setError(err);
-    } finally {
-      if (isInitialLoad) setLoading(false);
-      setIsRefreshing(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchStandings(true);
-  }, [fetchStandings]);
+  const currentSeason = useMemo(
+    () => resolveCurrentSeasonLabel(allMatches, liveLeague),
+    [allMatches, liveLeague]
+  );
 
   const seasons = useMemo(() => {
     const unique = new Set(allMatches.map((m) => m.season).filter(Boolean));
+    if (liveLeague?.seasonLabel) unique.add(liveLeague.seasonLabel);
     return [...unique].sort(seasonSortDesc);
-  }, [allMatches]);
+  }, [allMatches, liveLeague]);
 
   useEffect(() => {
-    if (!selectedSeason && seasons.length > 0) {
+    if (!selectedSeason && currentSeason) {
+      setSelectedSeason(currentSeason);
+    } else if (!selectedSeason && seasons.length > 0) {
       setSelectedSeason(seasons[0]);
     }
-  }, [selectedSeason, seasons]);
+  }, [selectedSeason, seasons, currentSeason]);
 
   useEffect(() => {
     if (!selectedSeason) return;
-    setTable(buildStandingsTable(allMatches, selectedSeason));
-  }, [allMatches, selectedSeason]);
+    if (liveLeague && selectedSeason === liveLeague.seasonLabel) {
+      const sorted = [...liveLeague.table].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+      setTable(sorted);
+    } else {
+      setTable(buildStandingsTable(allMatches, selectedSeason));
+    }
+  }, [allMatches, selectedSeason, liveLeague]);
 
   const qualificationProfile = useMemo(
     () => qualificationProfileForSeason(selectedSeason),
     [selectedSeason]
   );
+
+  const usingLiveTable = Boolean(liveLeague && selectedSeason === liveLeague.seasonLabel);
 
   if (loading) return <p>Loading standings...</p>;
   if (error) return <p>Error loading standings: {error.message}</p>;
@@ -164,9 +159,12 @@ const Standings = () => {
         </h1>
         <p className="browse-page__intro">
           Separate table view by season with European qualification bands.
+          {usingLiveTable
+            ? " Current season uses the official live table from the football data provider."
+            : ""}
         </p>
         <p className="status">Last updated: {lastUpdated ? lastUpdated.toLocaleTimeString() : "N/A"}</p>
-        <button className="refresh-button" onClick={() => fetchStandings(false)} disabled={isRefreshing}>
+        <button className="refresh-button" onClick={refresh} disabled={isRefreshing}>
           {isRefreshing ? "Refreshing..." : "Refresh now"}
         </button>
         <div className="season-filter">
@@ -178,6 +176,7 @@ const Standings = () => {
             {seasons.map((season) => (
               <option key={season} value={season}>
                 {season}
+                {season === currentSeason ? " (current)" : ""}
               </option>
             ))}
           </select>
@@ -200,7 +199,10 @@ const Standings = () => {
             </thead>
             <tbody>
               {table.map((row) => (
-                <tr key={row.team.id} className={getQualificationClass(row.position, qualificationProfile)}>
+                <tr
+                  key={row.team.id != null ? String(row.team.id) : row.team.name}
+                  className={getQualificationClass(row.position, qualificationProfile)}
+                >
                   <td>{row.position}</td>
                   <td>
                     <span className="club-cell">

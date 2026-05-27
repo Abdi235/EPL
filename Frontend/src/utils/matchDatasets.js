@@ -1,5 +1,6 @@
 import Papa from "papaparse";
 import API_BASE_URL from "../config/api.js";
+import { fetchMatchdayData } from "./eplApi.js";
 
 const PROXY_PATH_PL_202425 = "v1/match-data/pl_matches_2024_25.csv";
 const PROXY_PATH_E0_2526 = "v1/match-data/football_data_E0_2526.csv";
@@ -39,6 +40,9 @@ const MATCH_SOURCES = [
   { label: "2025/26 matches (football-data E0)", urls: candidateUrlsForFootball2526 },
 ];
 
+/** How often Results / Standings re-fetch CSVs so scores stay current (ms). */
+export const MATCH_DATA_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
+
 export function parseScore(value) {
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
@@ -54,6 +58,16 @@ export function isMatchCompleted(m) {
       Number.isFinite(Number(m.homeScore)) &&
       Number.isFinite(Number(m.awayScore))
   );
+}
+
+/** Score cell for Results / Home (includes live in-progress goals). */
+export function displayMatchScore(match, side) {
+  const score = side === "home" ? match?.homeScore : match?.awayScore;
+  const n = score == null ? null : Number(score);
+  if (match?.status === "live" && n != null && Number.isFinite(n)) return n;
+  if (isMatchCompleted(match) && n != null && Number.isFinite(n)) return n;
+  if (n != null && Number.isFinite(n) && match?.status === "finished") return n;
+  return "—";
 }
 
 /** Opening calendar year of a season label (e.g. 1992 from "1992/1993" or "92/93"). */
@@ -322,11 +336,29 @@ export function normalizeMatchRow(row) {
   return null;
 }
 
+function pickBetterDuplicateMatch(prev, next) {
+  const pc = isMatchCompleted(prev);
+  const nc = isMatchCompleted(next);
+  if (nc && !pc) return next;
+  if (pc && !nc) return prev;
+
+  const hasGw = (m) => m.gameweek != null && m.gameweek !== "";
+  if (pc && nc) {
+    if (hasGw(next) && !hasGw(prev)) return next;
+    if (hasGw(prev) && !hasGw(next)) return prev;
+    return next;
+  }
+
+  if (hasGw(next) && !hasGw(prev)) return next;
+  if (hasGw(prev) && !hasGw(next)) return prev;
+  return next;
+}
+
 async function fetchTextFirstOk(urls, label) {
   const errors = [];
   for (const url of urls) {
     try {
-      const res = await fetch(url);
+      const res = await fetch(url, { cache: "no-store" });
       if (res.ok) {
         return await res.text();
       }
@@ -340,6 +372,11 @@ async function fetchTextFirstOk(urls, label) {
 }
 
 export async function loadNormalizedMatches() {
+  const pack = await fetchMatchdayData();
+  if (pack?.matches?.length) {
+    return pack.matches;
+  }
+
   const texts = [];
   for (const { label, urls } of MATCH_SOURCES) {
     const urlList = urls();
@@ -372,13 +409,14 @@ export async function loadNormalizedMatches() {
     const prev = byKey.get(k);
     if (!prev) {
       byKey.set(k, m);
-    } else if ((prev.gameweek == null || prev.gameweek === "") && m.gameweek != null) {
-      byKey.set(k, m);
+    } else {
+      byKey.set(k, pickBetterDuplicateMatch(prev, m));
     }
   }
 
-  const deduped = [...byKey.values()];
-  applyGameweekInference(deduped);
-  deduped.sort(byDateDesc);
-  return deduped;
+  let combined = [...byKey.values()];
+
+  applyGameweekInference(combined);
+  combined.sort(byDateDesc);
+  return combined;
 }
