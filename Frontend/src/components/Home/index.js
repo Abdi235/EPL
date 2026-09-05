@@ -36,8 +36,7 @@ const Home = () => {
   const { matches: allMatches, liveLeague, loading, error, lastUpdated, refresh, isRefreshing } =
     useEplMatchdayData();
   const [highlightMediaByKey, setHighlightMediaByKey] = useState({});
-  const nameArray = 'Welcome to'.split('');
-  const jobArray = 'PremierZone'.split('');
+  const nameArray = 'PremierZone'.split('');
 
   useEffect(() => {
     const timerId = setTimeout(() => {
@@ -59,6 +58,8 @@ const Home = () => {
     if (!liveLeague?.table?.length) return [];
     return [...liveLeague.table].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
   }, [liveLeague]);
+
+  const seasonBadge = liveLeague?.seasonLabel || season || '2026/2027';
 
   useEffect(() => {
     if (!matches.length) {
@@ -95,55 +96,38 @@ const Home = () => {
 
   return (
     <div className="home-page">
-      <div className="overlay"></div>
+      <div className="overlay" aria-hidden="true" />
 
-      <div className="container hero-layout">
-        <section className="hero-content">
-          <p className="eyebrow">Premier League Intelligence Platform</p>
-          <h1 className="hero-title">
-            <img src={epLogo} alt="PremierZone logo" />
-            <AnimatedLetters letterClass={letterClass} strArray={nameArray} idx={12} />
-            <AnimatedLetters letterClass={letterClass} strArray={jobArray} idx={24} />
-          </h1>
-          <p className="hero-subtitle">
-            A clean, professional hub for Premier League standings, match results, and club insights.
-            Built for fast navigation and matchday clarity.
+      <section className="hero-stage" aria-label="PremierZone introduction">
+        <div className="hero-stage__glow" aria-hidden="true" />
+        <div className="hero-stage__content">
+          <p className="hero-stage__season">{seasonBadge} season</p>
+          <div className="hero-stage__brand">
+            <img src={epLogo} alt="" className="hero-stage__logo" />
+            <h1 className="hero-stage__title">
+              <AnimatedLetters letterClass={letterClass} strArray={nameArray} idx={12} />
+            </h1>
+          </div>
+          <p className="hero-stage__tagline">
+            Standings, results, and club insight for the Premier League — clear, fast, matchday-ready.
           </p>
-          <div className="cta-row">
-            <Link to="/standings" className="flat-button">Table</Link>
-            <Link to="/results" className="secondary-button">Results</Link>
-          </div>
-        </section>
-
-        <aside className="hero-panel">
-          <p className="panel-label">Quick Access</p>
-          <div className="feature-list">
-            <Link to="/standings" className="feature-card">
-              <h3>Table</h3>
-              <p>Dedicated standings tab by season.</p>
+          <div className="hero-stage__cta">
+            <Link to="/standings" className="flat-button">
+              View table
             </Link>
-            <Link to="/results" className="feature-card">
-              <h3>Results</h3>
-              <p>Filter by season, gameweek, and team.</p>
-            </Link>
-            <Link to="/gameweeks" className="feature-card">
-              <h3>Gameweeks</h3>
-              <p>Round-by-round fixtures with table positions and form.</p>
-            </Link>
-            <Link to="/teams" className="feature-card">
-              <h3>Teams</h3>
-              <p>Explore club-level views and player-focused data in one place.</p>
+            <Link to="/results" className="secondary-button">
+              Latest results
             </Link>
           </div>
-        </aside>
-      </div>
+        </div>
+      </section>
 
       <div className="container home-highlights-wrap">
         {leagueRows.length > 0 && (
           <section className="home-table" aria-labelledby="home-table-heading">
             <div className="home-table__top">
               <div>
-                <p className="eyebrow">Live table</p>
+                <p className="eyebrow">League table</p>
                 <h2 id="home-table-heading" className="home-table__title">
                   {liveLeague.seasonLabel} standings
                 </h2>
@@ -320,21 +304,6 @@ const Home = () => {
             </ul>
           )}
         </section>
-      </div>
-
-      <div className="home-metrics container">
-        <article className="metric-card">
-          <p className="metric-value">20</p>
-          <p className="metric-label">Premier League Clubs</p>
-        </article>
-        <article className="metric-card">
-          <p className="metric-value">380</p>
-          <p className="metric-label">Matches Per Season</p>
-        </article>
-        <article className="metric-card">
-          <p className="metric-value">Latest</p>
-          <p className="metric-label">Season-first tables and results</p>
-        </article>
       </div>
     </div>
   );

@@ -14,6 +14,7 @@
   --page-pad-x: clamp(16px, 4vw, 40px);
   --page-pad-y: clamp(24px, 4vw, 40px);
   --focus-ring: 0 0 0 3px rgba(255, 215, 0, 0.45);
+  --shadow-elevated: 0 18px 40px rgba(0, 0, 0, 0.35);
 }
 
 *,

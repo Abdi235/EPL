@@ -7,6 +7,8 @@ import nationData from "../data/nations.json";
  * "premLegacy" for the prem_stats-style export.
  */
 export const PLAYER_SEASON_CONFIG = [
+  { season: "2026/2027", csv: "/epl_player_stats_26_27.csv", format: "epl2024" },
+  { season: "2025/2026", csv: "/epl_player_stats_25_26.csv", format: "epl2024" },
   { season: "2024/2025", csv: "/epl_player_stats_24_25.csv", format: "epl2024" },
   { season: "2023/2024", csv: "/epl_player_stats_23_24.csv", format: "premLegacy" },
 ];
@@ -37,6 +39,10 @@ const TEAM_SYNONYM_GROUPS = [
   ["tottenham hotspur", "tottenham"],
   ["west ham united", "west ham"],
   ["nottingham forest", "nott'm forest"],
+  ["coventry city", "coventry"],
+  ["hull city", "hull"],
+  ["ipswich town", "ipswich"],
+  ["leeds united", "leeds"],
 ];
 
 function teamCanonicalId(name) {
@@ -59,6 +65,12 @@ export function normalizePlayerSeasonParam(raw) {
   }
   if (lower === "2023-24" || lower === "2023/24" || lower === "2023-2024") {
     return "2023/2024";
+  }
+  if (lower === "2025-26" || lower === "2025/26" || lower === "2025-2026") {
+    return "2025/2026";
+  }
+  if (lower === "2026-27" || lower === "2026/27" || lower === "2026-2027") {
+    return "2026/2027";
   }
   return defaultPlayerSeason();
 }

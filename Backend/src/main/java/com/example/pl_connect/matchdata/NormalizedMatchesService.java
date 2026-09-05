@@ -40,8 +40,10 @@ public class NormalizedMatchesService {
 
     private static final String SEASON_2024_25 = "2024/2025";
     private static final String SEASON_2025_26 = "2025/2026";
+    private static final String SEASON_2026_27 = "2026/2027";
     private static final Pattern ROUND_TRAILING_NUMBER = Pattern.compile("(\\d+)\\s*$");
     private static final Pattern UK_DATE = Pattern.compile("^(\\d{1,2})/(\\d{1,2})/(\\d{4})$");
+    private static final Pattern ISO_YEAR_MONTH = Pattern.compile("^(\\d{4})-(\\d{2})");
 
     private final EplService eplService;
     private final FootballDataUkSyncService footballDataUkSyncService;
@@ -83,6 +85,7 @@ public class NormalizedMatchesService {
         List<NormMatch> merged = new ArrayList<>();
         merged.addAll(readCsvClasspathSafe("match-data/matches.2.csv"));
         merged.addAll(readCsvClasspathSafe("match-data/pl_matches_2024_25.csv"));
+        merged.addAll(readCsvClasspathSafe("match-data/football_data_E0_2526.csv"));
         merged.addAll(readCurrentSeasonE0Rows());
 
         Map<String, NormMatch> byKey = new LinkedHashMap<>();
@@ -125,7 +128,7 @@ public class NormalizedMatchesService {
             }
         } catch (IOException ignored) {
         }
-        return readCsvClasspathSafe("match-data/football_data_E0_2526.csv");
+        return readCsvClasspathSafe("match-data/football_data_E0_2627.csv");
     }
 
     private ArrayNode buildLeagueTableFromList(List<NormMatch> combined, String seasonLabel) {
@@ -313,9 +316,17 @@ public class NormalizedMatchesService {
             Integer homeScore = parseScore(g(row, "FTHG"));
             Integer awayScore = parseScore(g(row, "FTAG"));
             boolean finished = homeScore != null && awayScore != null;
+            String isoDate = parseFootballDataUkDate(dateLeague);
+            String season = seasonLabelFromIsoDate(isoDate);
+            if (season == null || season.isBlank()) {
+                season = normalizeSeason(nz(g(row, "Season", "season")));
+            }
+            if (season == null || season.isBlank()) {
+                season = SEASON_2026_27;
+            }
             NormMatch m = new NormMatch();
-            m.season = SEASON_2025_26;
-            m.date = parseFootballDataUkDate(dateLeague);
+            m.season = season;
+            m.date = isoDate;
             m.homeTeam = mapFootballDataTeamName(homeTeamFd);
             m.awayTeam = mapFootballDataTeamName(awayTeamFd);
             m.homeScore = finished ? homeScore : null;
@@ -486,8 +497,25 @@ public class NormalizedMatchesService {
             case "Newcastle" -> "Newcastle Utd";
             case "Nott'm Forest" -> "Nott'ham Forest";
             case "Leeds" -> "Leeds United";
+            case "Coventry" -> "Coventry City";
+            case "Hull" -> "Hull City";
+            case "Ipswich" -> "Ipswich Town";
             default -> raw.trim();
         };
+    }
+
+    private static String seasonLabelFromIsoDate(String ymd) {
+        if (ymd == null || ymd.isBlank()) {
+            return null;
+        }
+        Matcher m = ISO_YEAR_MONTH.matcher(ymd.trim());
+        if (!m.find()) {
+            return null;
+        }
+        int year = Integer.parseInt(m.group(1));
+        int month = Integer.parseInt(m.group(2));
+        int opening = month >= 7 ? year : year - 1;
+        return opening + "/" + (opening + 1);
     }
 
     private static String normalizeSeason(String raw) {
@@ -497,6 +525,9 @@ public class NormalizedMatchesService {
         }
         if ("2526".equals(s) || "2025-26".equals(s) || "2025-2026".equals(s)) {
             return SEASON_2025_26;
+        }
+        if ("2627".equals(s) || "2026-27".equals(s) || "2026-2027".equals(s)) {
+            return SEASON_2026_27;
         }
         Matcher hy = Pattern.compile("^(\\d{4})-(\\d{2})$").matcher(s);
         if (hy.find()) {

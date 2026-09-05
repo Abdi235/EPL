@@ -16,8 +16,8 @@ import java.time.Instant;
 @Service
 public class FootballDataUkSyncService {
 
-    private static final String E0_URL_2526 = "https://www.football-data.co.uk/mmz4281/2526/E0.csv";
-    private static final String E0_FILENAME = "football_data_E0_2526.csv";
+    private static final String E0_URL_2627 = "https://www.football-data.co.uk/mmz4281/2627/E0.csv";
+    private static final String E0_FILENAME = "football_data_E0_2627.csv";
 
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -40,7 +40,7 @@ public class FootballDataUkSyncService {
             Files.createDirectories(syncDirectory());
             Path target = syncedE0Path();
             Path temp = syncDirectory().resolve(E0_FILENAME + ".tmp");
-            byte[] body = restTemplate.getForObject(E0_URL_2526, byte[].class);
+            byte[] body = restTemplate.getForObject(E0_URL_2627, byte[].class);
             if (body == null || body.length < 100) {
                 return null;
             }

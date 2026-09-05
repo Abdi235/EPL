@@ -4,6 +4,7 @@ import { fetchMatchdayData } from "./eplApi.js";
 
 const PROXY_PATH_PL_202425 = "v1/match-data/pl_matches_2024_25.csv";
 const PROXY_PATH_E0_2526 = "v1/match-data/football_data_E0_2526.csv";
+const PROXY_PATH_E0_2627 = "v1/match-data/football_data_E0_2627.csv";
 
 /** Try Spring Boot (Render/local), then Vercel proxy, then CRA /public. */
 function candidateUrlsForPl202425() {
@@ -18,26 +19,33 @@ function candidateUrlsForPl202425() {
   return urls;
 }
 
-function candidateUrlsForFootball2526() {
+function candidateUrlsForFootballE0(proxyPath, publicPath) {
   const urls = [];
   if (API_BASE_URL) {
-    urls.push(`${API_BASE_URL}/api/${PROXY_PATH_E0_2526}`);
+    urls.push(`${API_BASE_URL}/api/${proxyPath}`);
   }
   if (process.env.NODE_ENV === "production") {
-    urls.push(`/api/render-proxy?__path=${encodeURIComponent(PROXY_PATH_E0_2526)}`);
+    urls.push(`/api/render-proxy?__path=${encodeURIComponent(proxyPath)}`);
   }
-  urls.push("/football_data_E0_2526.csv");
+  urls.push(publicPath);
   return urls;
 }
 
 /**
- * Historical league file, 2024/25 matches, 2025/26 football-data.co.uk E0 (through ~early May 2026).
+ * Historical league file, 2024/25–2025/26 archives, plus live 2026/27 football-data.co.uk E0.
  * Per-team_match_stats.csv was removed — it mixed incomplete scores with full seasons.
  */
 const MATCH_SOURCES = [
   { label: "matches.2.csv", urls: () => ["/matches.2.csv"] },
   { label: "2024/25 matches", urls: candidateUrlsForPl202425 },
-  { label: "2025/26 matches (football-data E0)", urls: candidateUrlsForFootball2526 },
+  {
+    label: "2025/26 matches (football-data E0)",
+    urls: () => candidateUrlsForFootballE0(PROXY_PATH_E0_2526, "/football_data_E0_2526.csv"),
+  },
+  {
+    label: "2026/27 matches (football-data E0)",
+    urls: () => candidateUrlsForFootballE0(PROXY_PATH_E0_2627, "/football_data_E0_2627.csv"),
+  },
 ];
 
 /** How often Results / Standings re-fetch CSVs so scores stay current (ms). */
@@ -186,6 +194,9 @@ export function normalizeSeason(raw) {
   if (s === "2526" || s === "2025-26" || s === "2025-2026") {
     return "2025/2026";
   }
+  if (s === "2627" || s === "2026-27" || s === "2026-2027") {
+    return "2026/2027";
+  }
   const hy = s.match(/^(\d{4})-(\d{2})$/);
   if (hy) {
     const y1 = parseInt(hy[1], 10);
@@ -194,6 +205,17 @@ export function normalizeSeason(raw) {
     return `${y1}/${y2}`;
   }
   return s;
+}
+
+/** EPL season label from ISO date (July–June campaign). */
+export function seasonLabelFromIsoDate(ymd) {
+  const m = String(ymd ?? "").trim().match(/^(\d{4})-(\d{2})/);
+  if (!m) return null;
+  const year = parseInt(m[1], 10);
+  const month = parseInt(m[2], 10);
+  if (!Number.isFinite(year) || !Number.isFinite(month)) return null;
+  const opening = month >= 7 ? year : year - 1;
+  return `${opening}/${opening + 1}`;
 }
 
 const byDateDesc = (a, b) => String(b.date).localeCompare(String(a.date));
@@ -229,6 +251,9 @@ const FOOTBALL_DATA_TEAM_DISPLAY = {
   Newcastle: "Newcastle Utd",
   "Nott'm Forest": "Nott'ham Forest",
   Leeds: "Leeds United",
+  Coventry: "Coventry City",
+  Hull: "Hull City",
+  Ipswich: "Ipswich Town",
 };
 
 function mapFootballDataTeamName(raw) {
@@ -237,10 +262,9 @@ function mapFootballDataTeamName(raw) {
 }
 
 const SEASON_2024_25 = "2024/2025";
-const SEASON_2025_26 = "2025/2026";
 
 /**
- * League-wide results (matches.2.csv), 2024/25 (pl_matches), 2025/26 (football-data E0).
+ * League-wide results (matches.2.csv), 2024/25 (pl_matches), 2025/26–2026/27 (football-data E0).
  */
 export function normalizeMatchRow(row) {
   const dateLeague = row.Date ?? row.date;
@@ -266,28 +290,20 @@ export function normalizeMatchRow(row) {
     const homeScore = parseScore(row.FTHG);
     const awayScore = parseScore(row.FTAG);
     const finished = homeScore !== null && awayScore !== null;
-    if (!finished) {
-      return {
-        season: SEASON_2025_26,
-        date: parseFootballDataUkDate(dateLeague),
-        homeTeam: mapFootballDataTeamName(row.HomeTeam),
-        awayTeam: mapFootballDataTeamName(row.AwayTeam),
-        homeScore: null,
-        awayScore: null,
-        gameweek: null,
-        status: "scheduled",
-        kickoff: row.Time != null ? String(row.Time).trim() : null,
-      };
-    }
+    const date = parseFootballDataUkDate(dateLeague);
+    const season =
+      seasonLabelFromIsoDate(date) ||
+      normalizeSeason(row.Season ?? row.season ?? "") ||
+      "2026/2027";
     return {
-      season: SEASON_2025_26,
-      date: parseFootballDataUkDate(dateLeague),
+      season,
+      date,
       homeTeam: mapFootballDataTeamName(row.HomeTeam),
       awayTeam: mapFootballDataTeamName(row.AwayTeam),
-      homeScore,
-      awayScore,
+      homeScore: finished ? homeScore : null,
+      awayScore: finished ? awayScore : null,
       gameweek: null,
-      status: "finished",
+      status: finished ? "finished" : "scheduled",
       kickoff: row.Time != null ? String(row.Time).trim() : null,
     };
   }

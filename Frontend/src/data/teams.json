@@ -1,84 +1,84 @@
 {
     "teams": [
         {
-            "cover": "/teams/Arsenal.png", 
+            "cover": "/teams/Arsenal.png",
             "title": "Arsenal"
-        }, 
+        },
         {
-            "cover": "/teams/AstonVilla.png", 
+            "cover": "/teams/AstonVilla.png",
             "title": "Aston-Villa"
         },
         {
-            "cover": "/teams/Bournemouth.png", 
+            "cover": "/teams/Bournemouth.png",
             "title": "Bournemouth"
         },
         {
-            "cover": "/teams/Brentford.png", 
+            "cover": "/teams/Brentford.png",
             "title": "Brentford"
         },
         {
-            "cover": "/teams/Brighton.png", 
+            "cover": "/teams/Brighton.png",
             "title": "Brighton"
         },
         {
-            "cover": "/teams/Chelsea.png", 
+            "cover": "/teams/Chelsea.png",
             "title": "Chelsea"
         },
         {
-            "cover": "/teams/CrystalPalace.png", 
-            "title": "Crystal-Palace"
-        }, 
+            "cover": "/teams/CoventryCity.png",
+            "title": "Coventry-City"
+        },
         {
-            "cover": "/teams/Everton.png", 
+            "cover": "/teams/CrystalPalace.png",
+            "title": "Crystal-Palace"
+        },
+        {
+            "cover": "/teams/Everton.png",
             "title": "Everton"
         },
         {
-            "cover": "/teams/Fulham.png", 
+            "cover": "/teams/Fulham.png",
             "title": "Fulham"
         },
         {
-            "cover": "/teams/LeedsUnited.png", 
+            "cover": "/teams/HullCity.png",
+            "title": "Hull-City"
+        },
+        {
+            "cover": "/teams/IpswichTown.png",
+            "title": "Ipswich-Town"
+        },
+        {
+            "cover": "/teams/LeedsUnited.png",
             "title": "Leeds-United"
         },
         {
-            "cover": "/teams/LeicesterCity.png", 
-            "title": "Leicester-City"
-        },
-        {
-            "cover": "/teams/Liverpool.png", 
+            "cover": "/teams/Liverpool.png",
             "title": "Liverpool"
         },
         {
-            "cover": "/teams/ManchesterCity.png", 
+            "cover": "/teams/ManchesterCity.png",
             "title": "Manchester-City"
         },
         {
-            "cover": "/teams/ManchesterUnited.png", 
+            "cover": "/teams/ManchesterUnited.png",
             "title": "Manchester-United"
         },
         {
-            "cover": "/teams/Newcastle.png", 
+            "cover": "/teams/Newcastle.png",
             "title": "Newcastle"
         },
         {
-            "cover": "/teams/NottinghamForest.png", 
+            "cover": "/teams/NottinghamForest.png",
             "title": "Nottingham-Forest"
         },
         {
-            "cover": "/teams/Southampton.png", 
-            "title": "Southampton"
+            "cover": "/teams/Sunderland.png",
+            "title": "Sunderland"
         },
         {
-            "cover": "/teams/Tottenham.png", 
+            "cover": "/teams/Tottenham.png",
             "title": "Tottenham"
-        },
-        {
-            "cover": "/teams/WestHam.png", 
-            "title": "West-Ham"
-        },
-        {
-            "cover": "/teams/Wolves.png", 
-            "title": "Wolves"
         }
     ]
 }

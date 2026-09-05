@@ -61,6 +61,7 @@ export const EPL_TEAM_LOGO_URLS = {
   "grimsby town": WIKI_LOGO.grimsby,
   huddersfield: "https://media.api-sports.io/football/teams/37.png",
   "huddersfield town": "https://media.api-sports.io/football/teams/37.png",
+  hull: "https://media.api-sports.io/football/teams/73.png",
   "hull city": "https://media.api-sports.io/football/teams/73.png",
   ipswich: "https://media.api-sports.io/football/teams/57.png",
   "ipswich town": "https://media.api-sports.io/football/teams/57.png",

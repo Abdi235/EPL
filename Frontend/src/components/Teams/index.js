@@ -56,12 +56,12 @@ const Teams = () => {
         <>
             <div className="container teams-page browse-page">
                 <div className="browse-page__glass">
-                    <p className="browse-page__eyebrow">Clubs</p>
+                    <p className="browse-page__eyebrow">2026/27 Clubs</p>
                     <h1 className="page-title">
                         <AnimatedLetters letterClass={letterClass} strArray={"Teams".split("")} idx={15} />
                     </h1>
                     <p className="browse-page__intro">
-                        Browse every Premier League side and open full squad data for the current dataset season.
+                        All 20 Premier League sides for the 2026/27 season — including promoted Coventry City, Ipswich Town, and Hull City. Open a club for live squad stats.
                     </p>
                     <div className="search-bar">
                         <input

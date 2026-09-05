@@ -32,6 +32,11 @@ public class MatchDataController {
         return readClasspath("match-data/football_data_E0_2526.csv");
     }
 
+    @GetMapping(value = "/football_data_E0_2627.csv", produces = "text/csv;charset=UTF-8")
+    public ResponseEntity<byte[]> footballDataE02627() throws IOException {
+        return readClasspath("match-data/football_data_E0_2627.csv");
+    }
+
     private ResponseEntity<byte[]> readClasspath(String location) throws IOException {
         ClassPathResource resource = new ClassPathResource(location);
         if (!resource.exists()) {
