@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+﻿import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { fetchMatchdayData, fetchLiveLeagueTable } from "../utils/eplApi";
 import {
   loadNormalizedMatches,
@@ -6,14 +6,14 @@ import {
   MATCH_DATA_LIVE_REFRESH_INTERVAL_MS,
 } from "../utils/matchDatasets";
 
-function hasLiveFixtures(matches) {
-  return (matches || []).some((m) => String(m?.status || "").toLowerCase() === "live");
+function hasLiveFixtures(list) {
+  return (list || []).some((m) => String(m?.status || "").toLowerCase() === "live");
 }
 
 /**
  * Shared live EPL data for Home, Results, and Standings (backend matchday-data endpoint).
- * Polls frequently while games are live and always asks the backend for fresh FT scores
- * when the user refreshes or returns to the tab.
+ * Polls frequently while games are live and force-refreshes when the user returns to the tab
+ * or clicks Refresh so FT scores and the table update promptly.
  */
 export function useEplMatchdayData() {
   const [loading, setLoading] = useState(true);
@@ -23,6 +23,8 @@ export function useEplMatchdayData() {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const loadInFlight = useRef(false);
+  const matchesRef = useRef(matches);
+  matchesRef.current = matches;
 
   const load = useCallback(async ({ forceRefresh = false, isInitialLoad = false } = {}) => {
     if (loadInFlight.current && !isInitialLoad) return;
@@ -71,11 +73,10 @@ export function useEplMatchdayData() {
 
   useEffect(() => {
     const id = setInterval(() => {
-      // Let the backend decide via its short stale window; force when live so FT flips quickly.
-      load({ forceRefresh: hasLiveFixtures(matches) });
+      load({ forceRefresh: hasLiveFixtures(matchesRef.current) });
     }, pollMs);
     return () => clearInterval(id);
-  }, [load, pollMs, matches]);
+  }, [load, pollMs]);
 
   useEffect(() => {
     const onVisible = () => {
