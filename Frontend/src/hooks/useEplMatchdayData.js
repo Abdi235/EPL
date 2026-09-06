@@ -1,10 +1,19 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { fetchMatchdayData, fetchLiveLeagueTable } from "../utils/eplApi";
-import { loadNormalizedMatches } from "../utils/matchDatasets";
-import { MATCH_DATA_REFRESH_INTERVAL_MS } from "../utils/matchDatasets";
+import {
+  loadNormalizedMatches,
+  MATCH_DATA_REFRESH_INTERVAL_MS,
+  MATCH_DATA_LIVE_REFRESH_INTERVAL_MS,
+} from "../utils/matchDatasets";
+
+function hasLiveFixtures(matches) {
+  return (matches || []).some((m) => String(m?.status || "").toLowerCase() === "live");
+}
 
 /**
  * Shared live EPL data for Home, Results, and Standings (backend matchday-data endpoint).
+ * Polls frequently while games are live and always asks the backend for fresh FT scores
+ * when the user refreshes or returns to the tab.
  */
 export function useEplMatchdayData() {
   const [loading, setLoading] = useState(true);
@@ -13,11 +22,14 @@ export function useEplMatchdayData() {
   const [liveLeague, setLiveLeague] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const loadInFlight = useRef(false);
 
-  const load = useCallback(async (isInitialLoad = false) => {
+  const load = useCallback(async ({ forceRefresh = false, isInitialLoad = false } = {}) => {
+    if (loadInFlight.current && !isInitialLoad) return;
+    loadInFlight.current = true;
     try {
       if (!isInitialLoad) setIsRefreshing(true);
-      const pack = await fetchMatchdayData(isInitialLoad);
+      const pack = await fetchMatchdayData(forceRefresh || isInitialLoad);
       if (pack) {
         setMatches(pack.matches);
         setLiveLeague(pack.liveLeague);
@@ -41,21 +53,35 @@ export function useEplMatchdayData() {
     } finally {
       if (isInitialLoad) setLoading(false);
       setIsRefreshing(false);
+      loadInFlight.current = false;
     }
   }, []);
 
   useEffect(() => {
-    load(true);
+    load({ isInitialLoad: true, forceRefresh: true });
   }, [load]);
 
+  const pollMs = useMemo(
+    () =>
+      hasLiveFixtures(matches)
+        ? MATCH_DATA_LIVE_REFRESH_INTERVAL_MS
+        : MATCH_DATA_REFRESH_INTERVAL_MS,
+    [matches]
+  );
+
   useEffect(() => {
-    const id = setInterval(() => load(false), MATCH_DATA_REFRESH_INTERVAL_MS);
+    const id = setInterval(() => {
+      // Let the backend decide via its short stale window; force when live so FT flips quickly.
+      load({ forceRefresh: hasLiveFixtures(matches) });
+    }, pollMs);
     return () => clearInterval(id);
-  }, [load]);
+  }, [load, pollMs, matches]);
 
   useEffect(() => {
     const onVisible = () => {
-      if (document.visibilityState === "visible") load(false);
+      if (document.visibilityState === "visible") {
+        load({ forceRefresh: true });
+      }
     };
     document.addEventListener("visibilitychange", onVisible);
     return () => document.removeEventListener("visibilitychange", onVisible);
@@ -68,6 +94,6 @@ export function useEplMatchdayData() {
     error,
     lastUpdated,
     isRefreshing,
-    refresh: () => load(false),
+    refresh: () => load({ forceRefresh: true }),
   };
 }

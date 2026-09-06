@@ -48,8 +48,11 @@ const MATCH_SOURCES = [
   },
 ];
 
-/** How often Results / Standings re-fetch CSVs so scores stay current (ms). */
-export const MATCH_DATA_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
+/** How often Results / Standings / Home re-fetch when no live fixtures (ms). */
+export const MATCH_DATA_REFRESH_INTERVAL_MS = 2 * 60 * 1000;
+
+/** Faster poll while any fixture is in progress (ms). */
+export const MATCH_DATA_LIVE_REFRESH_INTERVAL_MS = 45 * 1000;
 
 export function parseScore(value) {
   const n = Number(value);

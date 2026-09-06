@@ -19,6 +19,7 @@ import java.time.Instant;
 
 /**
  * Persists merged matchday payload on disk and refreshes from football-data.co.uk + API-Football.
+ * Cache stays short-lived so finished (FT) scores and the league table update promptly.
  */
 @Service
 public class EplMatchdayCacheService {
@@ -33,8 +34,11 @@ public class EplMatchdayCacheService {
     @Value("${app.epl.data-dir:data/epl-sync}")
     private String dataDir;
 
-    @Value("${app.epl.cache-stale-minutes:30}")
+    @Value("${app.epl.cache-stale-minutes:2}")
     private int cacheStaleMinutes;
+
+    @Value("${app.epl.cache-live-stale-minutes:1}")
+    private int cacheLiveStaleMinutes;
 
     public EplMatchdayCacheService(
             NormalizedMatchesService normalizedMatchesService,
@@ -56,7 +60,7 @@ public class EplMatchdayCacheService {
         }
     }
 
-    @Scheduled(fixedDelayString = "${app.epl.cache-refresh-ms:1800000}")
+    @Scheduled(fixedDelayString = "${app.epl.cache-refresh-ms:120000}")
     public void scheduledRefresh() {
         try {
             refreshIfStale(false);
@@ -96,9 +100,32 @@ public class EplMatchdayCacheService {
                 return true;
             }
             Instant modified = Files.getLastModifiedTime(cache).toInstant();
-            return Duration.between(modified, Instant.now()).toMinutes() >= cacheStaleMinutes;
+            long ageMinutes = Duration.between(modified, Instant.now()).toMinutes();
+            int threshold = Math.max(1, cacheStaleMinutes);
+            if (cacheContainsLiveMatches(cache) && cacheLiveStaleMinutes > 0) {
+                threshold = Math.min(threshold, Math.max(1, cacheLiveStaleMinutes));
+            }
+            return ageMinutes >= threshold;
         } catch (IOException ex) {
             return true;
+        }
+    }
+
+    private boolean cacheContainsLiveMatches(Path cache) {
+        try {
+            JsonNode root = objectMapper.readTree(cache.toFile());
+            JsonNode matches = root.path("matches");
+            if (!matches.isArray()) {
+                return false;
+            }
+            for (JsonNode m : matches) {
+                if ("live".equalsIgnoreCase(m.path("status").asText(""))) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (IOException ex) {
+            return false;
         }
     }
 
@@ -116,6 +143,10 @@ public class EplMatchdayCacheService {
             if (apiTable.path("table").isArray() && apiTable.path("table").size() > 0) {
                 leagueTable = (ObjectNode) apiTable;
                 tableSource = apiTable.path("source").asText("api-football");
+            } else {
+                ArrayNode computed = normalizedMatchesService.buildLeagueTableFromMatches(seasonLabel);
+                leagueTable.set("table", computed);
+                leagueTable.put("source", tableSource);
             }
         } catch (RestClientException ignored) {
             ArrayNode computed = normalizedMatchesService.buildLeagueTableFromMatches(seasonLabel);

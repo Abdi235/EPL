@@ -1,5 +1,6 @@
 /**
  * GET /api/v1/epl/matchday-data — proxy to Spring Boot (matches + live table).
+ * Forwards query strings (e.g. ?refresh=true) so the SPA can force a live rebuild.
  */
 const resolveBackendOrigin = require("../../_resolveBackendOrigin");
 
@@ -27,7 +28,17 @@ module.exports = async (req, res) => {
     return;
   }
 
-  const targetUrl = `${origin}/api/v1/epl/matchday-data`;
+  let incoming;
+  try {
+    incoming = new URL(req.url || "", "https://vercel.internal");
+  } catch {
+    res.status(400).setHeader("Content-Type", "application/json; charset=utf-8");
+    res.end(JSON.stringify({ message: "Bad request URL." }));
+    return;
+  }
+
+  const qs = incoming.search || "";
+  const targetUrl = `${origin}/api/v1/epl/matchday-data${qs}`;
 
   let upstream;
   try {
